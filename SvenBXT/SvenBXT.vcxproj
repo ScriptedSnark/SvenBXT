@@ -85,9 +85,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="conutils.cpp" />
     <ClCompile Include="SvenBXT.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="conutils.hpp" />
     <ClInclude Include="MemUtils.h" />
     <ClInclude Include="SvenBXT.hpp" />
     <ClInclude Include="patterns.hpp" />

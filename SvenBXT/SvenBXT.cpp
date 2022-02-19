@@ -1,4 +1,76 @@
 #include "SvenBXT.hpp"
+#include "conutils.hpp"
+
+static FILE* logfile = nullptr;
+
+/* Dev Messages */
+static void Log(const char* prefix, const char* msg)
+{
+    if (logfile)
+    {
+        auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+        auto ltime = std::localtime(&time);
+        fprintf(logfile, "[%02d:%02d:%02d] [%s] %s", ltime->tm_hour, ltime->tm_min, ltime->tm_sec, prefix, msg);
+        fflush(logfile);
+    }
+}
+
+void PrintMessage(const char* format, ...)
+{
+    va_list args;
+    va_start(args, format);
+
+    char temp[1024];
+    vsprintf_s(temp, format, args);
+
+    va_end(args);
+
+    ConUtils::Log(temp);
+    Log("Msg", temp);
+}
+
+void PrintDevMessage(const char* format, ...)
+{
+    va_list args;
+    va_start(args, format);
+
+    char temp[1024];
+    vsprintf_s(temp, format, args);
+
+    va_end(args);
+
+    ConUtils::Log(temp, FOREGROUND_RED | FOREGROUND_GREEN);
+    Log("DevMsg", temp);
+}
+
+void PrintWarning(const char* format, ...)
+{
+    va_list args;
+    va_start(args, format);
+
+    char temp[1024];
+    vsprintf_s(temp, format, args);
+
+    va_end(args);
+
+    ConUtils::Log(temp, FOREGROUND_RED | FOREGROUND_INTENSITY);
+    Log("Warning", temp);
+}
+
+void PrintDevWarning(const char* format, ...)
+{
+    va_list args;
+    va_start(args, format);
+
+    char temp[1024];
+    vsprintf_s(temp, format, args);
+
+    va_end(args);
+
+    ConUtils::Log(temp, FOREGROUND_RED);
+    Log("DevWarning", temp);
+}
+/* END */
 
 typedef void(__cdecl* _Con_Printf) (const char* fmt, ...);
 _Con_Printf ORIG_Con_Printf;
@@ -41,20 +113,8 @@ template<typename Fun, int N = 0, typename Callable> Fun* funptr(Callable&& c) {
 	return funptr_<N>(std::forward<Callable>(c), (Fun*)nullptr);
 }
 
-HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-
 void SvenBXT::Main() {
-    AllocConsole();
-    SetConsoleTitleW(L"SvenBXT Debug Console");
-    freopen("CONIN$", "rb", stdin);		// reopen stdin handle as console window input
-    freopen("CONOUT$", "wb", stdout);		// reopen stout handle as console window output
-    freopen("CONOUT$", "wb", stderr);		// reopen stderr handle as console window output
-    SetConsoleTextAttribute(hConsole, 14);
-    wprintf(L"SvenBXT is remake of Bunnymod XT for Sven Co-op.\n");
-    printf("By ScriptedSnark.\n");
-    printf("Build time: %s - %s\n\n", __DATE__, __TIME__);
-    ShowWindow(GetConsoleWindow(), SW_MAXIMIZE);
-    ShowWindow(GetConsoleWindow(), SW_SHOWMINNOACTIVE);
+    ConUtils::Init();
     svenbxt->AddBXTStuff();
 }
 
@@ -67,17 +127,16 @@ void SvenBXT::AddBXTStuff() {
         ORIG_Cbuf_AddText = reinterpret_cast<_Cbuf_AddText>(MemUtils::GetSymbolAddress(handle, "Cbuf_AddText"));
         ORIG_Cmd_AddMallocCommand = reinterpret_cast<_Cmd_AddMallocCommand>(MemUtils::GetSymbolAddress(handle, "Cmd_AddMallocCommand"));
         ORIG_Con_Printf = reinterpret_cast<_Con_Printf>(MemUtils::GetSymbolAddress(handle, "ORIG_Con_Printf"));
-
         auto utils = Utils::Utils(handle, base, size);
         auto fCbuf_AddText = utils.FindAsync(ORIG_Cbuf_AddText, patterns::engine::Cbuf_AddText);
         auto fCmd_AddMallocCommand = utils.FindAsync(ORIG_Cmd_AddMallocCommand, patterns::engine::Cmd_AddMallocCommand);
         auto pattern = fCbuf_AddText.get();
         auto pattern2 = fCmd_AddMallocCommand.get();
         if (ORIG_Cbuf_AddText) {
-            printf("[hw dll] Found Cbuf_AddText at %p.\n", ORIG_Cbuf_AddText);
+            PrintDevMessage("[hw dll] Found Cbuf_AddText at %p.\n", ORIG_Cbuf_AddText);
         }
         if (ORIG_Cmd_AddMallocCommand) {
-            printf("[hw dll] Found Cmd_AddMallocCommand at %p.\n", ORIG_Cmd_AddMallocCommand);
+            PrintDevMessage("[hw dll] Found Cmd_AddMallocCommand at %p.\n", ORIG_Cmd_AddMallocCommand);
         }
         void* Host_AutoSave_f;
         auto fHost_AutoSave_f = utils.FindAsync(
@@ -101,11 +160,16 @@ void SvenBXT::AddBXTStuff() {
                     break;
                 }
             });
+
+        /* COMMANDS START */
+
         Cmd_AddMallocCommand("bxt_version", funptr<void()>([&]() {
             ORIG_Con_Printf(const_cast<char*>("Build time: %s - %s\n"), __DATE__, __TIME__);
         }), 2);
+
+        /* COMMANDS END */
     } else {
-        printf("[hw dll] Could not get module info of hw.dll.\n");
+        PrintWarning("[hw dll] Could not get module info of hw.dll.\n");
     }
 }
 
