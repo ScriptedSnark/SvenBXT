@@ -85,11 +85,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ClientDLL.cpp" />
     <ClCompile Include="SvenBXT.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ClientDLL.hpp" />
     <ClInclude Include="MemUtils.h" />
     <ClInclude Include="SvenBXT.hpp" />
     <ClInclude Include="patterns.hpp" />
