@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Windows.h>
+#include <assert.h>
 #include <Psapi.h>
 #include <vector>
 #include <algorithm>
