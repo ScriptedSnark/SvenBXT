@@ -294,7 +294,7 @@ void SvenBXT::AddHWStuff() {
 
         struct Cmd_BXT_Version
         {
-            USAGE("BXT version: " __TIMESTAMP__);
+            USAGE("Compilation time: " __TIMESTAMP__);
 
             static void handler(const char* command)
             {
