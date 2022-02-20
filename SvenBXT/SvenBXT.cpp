@@ -236,7 +236,7 @@ void SvenBXT::AddBXTStuff() {
 
             static void handler(const char* command)
             {
-                ORIG_Con_Printf("BXT version: %s\n", __TIMESTAMP__);
+                ORIG_Con_Printf("Compilation time: %s\n", __TIMESTAMP__);
             }
         };
         /* COMMANDS START - CMDWRAPPER */
