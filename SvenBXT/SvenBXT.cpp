@@ -141,7 +141,6 @@ void RegisterCVar(CVarWrapper& cvar)
     cvar.MarkAsStale();
 }
 
-
 void SvenBXT::Main() {
     ConUtils::Init();
     svenbxt->AddHWStuff();
@@ -323,63 +322,6 @@ void SvenBXT::AddCLStuff() {
     size_t size;
 
     if (MemUtils::GetModuleInfo(L"client.dll", &handle, &base, &size)) {
-        /* gEngfuncs hook - START */
-        pEngfuncs = reinterpret_cast<cl_enginefunc_t*>(MemUtils::GetSymbolAddress(handle, "gEngfuncs"));
-        if (pEngfuncs) {
-            PrintDevMessage("[client dll] pEngfuncs is %p.\n", pEngfuncs);
-        }
-        else {
-            // In AG, this thing is the main function, so check that first.
-            auto pInitialize = MemUtils::GetSymbolAddress(handle, "?Initialize_Body@@YAHPAUcl_enginefuncs_s@@H@Z");
-            if (!pInitialize)
-                pInitialize = MemUtils::GetSymbolAddress(handle, "Initialize");
-            if (pInitialize)
-            {
-                PrintDevMessage("[client dll] Found Initialize at %p.\n", pInitialize);
-
-                // In some cases Initialize contains just a jump to the real function (Residual Life).
-                if (*reinterpret_cast<byte*>(pInitialize) == 0xE9) {
-                    pInitialize = reinterpret_cast<void*>(
-                        *reinterpret_cast<uintptr_t*>(reinterpret_cast<uintptr_t>(pInitialize) + 1)
-                        + reinterpret_cast<uintptr_t>(pInitialize) + 5);
-                    PrintDevMessage("Jump detected, found the real Initialize at %p.\n", pInitialize);
-                }
-
-                // Find "mov edi, offset dword; rep movsd" inside Initialize. The pointer to gEngfuncs is that dword.
-                static constexpr auto p = PATTERN("BF ?? ?? ?? ?? F3 A5");
-                auto addr = MemUtils::find_pattern(pInitialize, 40, p);
-                if (!addr) {
-                    static constexpr auto p = PATTERN("B9 ?? ?? ?? ?? 8B 54 24 10");
-                    addr = MemUtils::find_pattern(pInitialize, 40, p);
-                }
-                if (!addr) {
-                    // client.dll that comes with TWHL Tower 2
-                    static constexpr auto p = PATTERN("B8 ?? ?? ?? ?? 8B F8 F3 A5");
-                    addr = MemUtils::find_pattern(pInitialize, 40, p);
-                }
-
-                if (addr)
-                {
-                    pEngfuncs = *reinterpret_cast<cl_enginefunc_t**>(addr + 1);
-                    PrintDevWarning("[client dll] pEngfuncs is %p.\n", pEngfuncs);
-                }
-                else
-                {
-                    PrintDevWarning("[client dll] Couldn't find the pattern in Initialize.\n");
-                    PrintDevWarning("Custom HUD is not available.\n");
-                    PrintDevWarning("Clientside logging is not available.\n");
-                }
-            }
-            else
-            {
-                PrintDevWarning("[client dll] Couldn't get the address of Initialize.\n");
-                PrintDevWarning("Custom HUD is not available.\n");
-                PrintDevWarning("Clientside logging is not available.\n");
-            }
-        }
-        /* gEngfuncs hook - END */
-
-
         /* CVars registration - START */
         RegisterCVar(CVars::bxt_hud);
         /* CVars registration - END */

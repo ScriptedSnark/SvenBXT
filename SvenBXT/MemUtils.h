@@ -16,32 +16,6 @@
 namespace MemUtils {
 	using namespace patterns;
 
-	template<class T>
-	class LazilyConstructed {
-		// Not a unique_ptr to prevent any further "constructors haven't run yet" issues.
-		// _Hopefully_ this gets put in BSS so it's nullptr by default for global objects.
-		T* object;
-
-	public:
-		LazilyConstructed() : object(nullptr) {}
-		// The object is leaked (this is meant to be used only for global stuff anyway).
-		// Some stuff calls dlclose after the destructors have been run, so destroying the
-		// object here leads to crashes.
-		~LazilyConstructed() {}
-
-		T& get() {
-			if (!object)
-				object = new T();
-
-			assert(object);
-			return *object;
-		}
-	};
-
-	static LazilyConstructed<std::unordered_map< void*, std::unordered_map<void*, void*> >> symbolLookupHooks;
-	// Mutex happens to default to all zeros as far as I can tell, at least in libstdc++.
-	static std::mutex symbolLookupHookMutex;
-
 	bool GetModuleInfo(void* moduleHandle, void** moduleBase, size_t* moduleSize)
 	{
 		if (!moduleHandle)
@@ -68,15 +42,6 @@ namespace MemUtils {
 			*moduleHandle = Handle;
 
 		return ret;
-	}
-
-	void AddSymbolLookupHook(void* moduleHandle, void* original, void* target)
-	{
-		if (!original)
-			return;
-
-		std::lock_guard<std::mutex> lock(symbolLookupHookMutex);
-		symbolLookupHooks.get()[moduleHandle][original] = target;
 	}
 
 	void* GetSymbolAddress(void* moduleHandle, const char* functionName)
@@ -295,53 +260,5 @@ namespace MemUtils {
 				onFound(it);
 			return it;
 			});
-	}
-
-	template<typename T>
-	struct identity
-	{
-		typedef T type;
-	};
-
-	namespace detail
-	{
-		void Intercept(const std::wstring& moduleName, size_t n, const std::pair<void**, void*> funcPairs[]);
-		void RemoveInterception(const std::wstring& moduleName, size_t n, void** const functions[]);
-
-		template<typename FuncType, size_t N>
-		inline void Intercept(const std::wstring& moduleName, std::array<std::pair<void**, void*>, N>& funcPairs, FuncType& target, typename identity<FuncType>::type detour)
-		{
-			funcPairs[N - 1] = { reinterpret_cast<void**>(&target), reinterpret_cast<void*>(detour) };
-			Intercept(moduleName, N, funcPairs.data());
-		}
-
-		template<typename FuncType, size_t N, typename... Rest>
-		inline void Intercept(const std::wstring& moduleName, std::array<std::pair<void**, void*>, N>& funcPairs, FuncType& target, typename identity<FuncType>::type detour, Rest&... rest)
-		{
-			funcPairs[N - (sizeof...(rest) / 2 + 1)] = { reinterpret_cast<void**>(&target), reinterpret_cast<void*>(detour) };
-			Intercept(moduleName, funcPairs, rest...);
-		}
-	}
-
-	template<typename FuncType>
-	inline void Intercept(const std::wstring& moduleName, FuncType& target, typename identity<FuncType>::type detour)
-	{
-		const std::pair<void**, void*> temp[] = { { reinterpret_cast<void**>(&target), reinterpret_cast<void*>(detour) } };
-		detail::Intercept(moduleName, 1, temp);
-	}
-
-	template<typename FuncType, typename... Rest>
-	inline void Intercept(const std::wstring& moduleName, FuncType& target, typename identity<FuncType>::type detour, Rest&... rest)
-	{
-		std::array<std::pair<void**, void*>, sizeof...(rest) / 2 + 1> funcPairs;
-		funcPairs[0] = { reinterpret_cast<void**>(&target), reinterpret_cast<void*>(detour) };
-		detail::Intercept(moduleName, funcPairs, rest...);
-	}
-
-	template<typename... FuncType>
-	inline void RemoveInterception(const std::wstring& moduleName, FuncType&... functions)
-	{
-		void** const temp[] = { reinterpret_cast<void**>(&functions)... };
-		detail::RemoveInterception(moduleName, sizeof...(functions), temp);
 	}
 }
