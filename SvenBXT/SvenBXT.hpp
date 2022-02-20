@@ -9,7 +9,8 @@
 #include "stdio.h"
 
 typedef struct SvenBXT {
-    void AddBXTStuff();
+    void AddHWStuff();
+    // void AddCLStuff();
     static void Main();
 } SvenBXT;
 

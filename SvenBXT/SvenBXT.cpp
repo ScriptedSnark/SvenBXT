@@ -123,10 +123,10 @@ struct CmdFuncs
 
 void SvenBXT::Main() {
     ConUtils::Init();
-    svenbxt->AddBXTStuff();
+    svenbxt->AddHWStuff();
 }
 
-void SvenBXT::AddBXTStuff() {
+void SvenBXT::AddHWStuff() {
     void* handle;
     void* base;
     size_t size;
@@ -239,6 +239,7 @@ void SvenBXT::AddBXTStuff() {
                 ORIG_Con_Printf("Compilation time: %s\n", __TIMESTAMP__);
             }
         };
+
         /* COMMANDS START - CMDWRAPPER */
 
         using CmdWrapper::Handler;
@@ -252,6 +253,20 @@ void SvenBXT::AddBXTStuff() {
         PrintWarning("[hw dll] Could not get module info of hw.dll.\n");
     }
 }
+
+/*void SvenBXT::AddCLStuff() {
+    void* handle;
+    void* base;
+    size_t size;
+
+    if (MemUtils::GetModuleInfo(L"client.dll", &handle, &base, &size)) {
+
+    }
+    else {
+        printf("[client dll] Could not get module info of client.dll.\n");
+    }
+}
+*/
 
 DWORD WINAPI DllMain(_In_ void* _DllHandle, _In_ unsigned long _Reason, _In_opt_ void** unused) {
     if (_Reason == DLL_PROCESS_ATTACH) {
