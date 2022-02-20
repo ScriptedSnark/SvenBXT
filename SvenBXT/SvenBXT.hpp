@@ -5,12 +5,13 @@
 #include <string>
 #include "Utils.hpp"
 #include "ptrns.hpp"
+#include "hlsdk_mini.hpp"
 #include "MemUtils.h"
 #include "stdio.h"
 
 typedef struct SvenBXT {
     void AddHWStuff();
-    // void AddCLStuff();
+    void AddCLStuff();
     static void Main();
 } SvenBXT;
 

@@ -1,8 +1,10 @@
 #include "SvenBXT.hpp"
 #include "conutils.hpp"
 #include "cmd_wrapper.hpp"
+#include "cvars.hpp"
 
 static FILE* logfile = nullptr;
+cvar_t** cvar_vars;
 
 /* Dev Messages */
 static void Log(const char* prefix, const char* msg)
@@ -79,6 +81,13 @@ _Con_Printf ORIG_Con_Printf;
 typedef void(_cdecl* _Cbuf_AddText)(const char* text);
 _Cbuf_AddText ORIG_Cbuf_AddText;
 
+typedef void(__cdecl* _Cvar_RegisterVariable) (cvar_t* cvar);
+_Cvar_RegisterVariable ORIG_Cvar_RegisterVariable;
+
+typedef cvar_t* (__cdecl* _Cvar_FindVar) (const char* name);
+_Cvar_FindVar ORIG_Cvar_FindVar;
+
+
 void Cbuf_AddText(const char* text) {
     ORIG_Cbuf_AddText(text);
 }
@@ -96,7 +105,6 @@ typedef char* (__cdecl* _Cmd_Args) ();
 _Cmd_Args ORIG_Cmd_Args;
 typedef char* (__cdecl* _Cmd_Argv) (unsigned n);
 _Cmd_Argv ORIG_Cmd_Argv;
-
 
 struct CmdFuncs
 {
@@ -121,9 +129,22 @@ struct CmdFuncs
     }
 };
 
+void RegisterCVar(CVarWrapper& cvar)
+{
+    if (!ORIG_Cvar_FindVar || !ORIG_Cvar_RegisterVariable)
+        return;
+
+    if (ORIG_Cvar_FindVar(cvar.GetPointer()->name))
+        return;
+
+    ORIG_Cvar_RegisterVariable(cvar.GetPointer());
+    cvar.MarkAsStale();
+}
+
 void SvenBXT::Main() {
     ConUtils::Init();
     svenbxt->AddHWStuff();
+    svenbxt->AddCLStuff();
 }
 
 void SvenBXT::AddHWStuff() {
@@ -135,17 +156,58 @@ void SvenBXT::AddHWStuff() {
         ORIG_Cbuf_AddText = reinterpret_cast<_Cbuf_AddText>(MemUtils::GetSymbolAddress(handle, "Cbuf_AddText"));
         ORIG_Cmd_AddMallocCommand = reinterpret_cast<_Cmd_AddMallocCommand>(MemUtils::GetSymbolAddress(handle, "Cmd_AddMallocCommand"));
         ORIG_Con_Printf = reinterpret_cast<_Con_Printf>(MemUtils::GetSymbolAddress(handle, "ORIG_Con_Printf"));
+        ORIG_Cvar_FindVar = reinterpret_cast<_Cvar_FindVar>(MemUtils::GetSymbolAddress(handle, "ORIG_Cvar_FindVar"));
+        ORIG_Cvar_RegisterVariable = reinterpret_cast<_Cvar_RegisterVariable>(MemUtils::GetSymbolAddress(handle, "Cvar_RegisterVariable"));
+        cvar_vars = reinterpret_cast<cvar_t**>(MemUtils::GetSymbolAddress(handle, "cvar_vars"));
 
         auto utils = Utils::Utils(handle, base, size);
         auto fCbuf_AddText = utils.FindAsync(ORIG_Cbuf_AddText, patterns::engine::Cbuf_AddText);
         auto fCmd_AddMallocCommand = utils.FindAsync(ORIG_Cmd_AddMallocCommand, patterns::engine::Cmd_AddMallocCommand);
+        auto fCvar_FindVar = utils.FindAsync(ORIG_Cvar_FindVar, patterns::engine::Cvar_FindVar);
         auto pattern = fCbuf_AddText.get();
         auto pattern2 = fCmd_AddMallocCommand.get();
+
+        auto fCvar_RegisterVariable = utils.FindAsync(
+            ORIG_Cvar_RegisterVariable,
+            patterns::engine::Cvar_RegisterVariable,
+            [&](auto pattern) {
+                switch (pattern - patterns::engine::Cvar_RegisterVariable.cbegin())
+                {
+                case 0: // HL-SteamPipe
+                    cvar_vars = reinterpret_cast<cvar_t**>(*reinterpret_cast<uintptr_t*>(reinterpret_cast<uintptr_t>(ORIG_Cvar_RegisterVariable) + 124));
+                    break;
+                case 1: // HL-NGHL
+                    cvar_vars = reinterpret_cast<cvar_t**>(*reinterpret_cast<uintptr_t*>(reinterpret_cast<uintptr_t>(ORIG_Cvar_RegisterVariable) + 122));
+                    break;
+                case 2: // Sven-8832
+                    cvar_vars = reinterpret_cast<cvar_t**>(*reinterpret_cast<uintptr_t*>(reinterpret_cast<uintptr_t>(ORIG_Cvar_RegisterVariable) + 23));
+                    break;
+                }
+            });
+
+        auto pattern3 = fCvar_RegisterVariable.get();
+        auto pattern4 = fCvar_FindVar.get();
+
         if (ORIG_Cbuf_AddText) {
             PrintDevMessage("[hw dll] Found Cbuf_AddText at %p.\n", ORIG_Cbuf_AddText);
         }
         if (ORIG_Cmd_AddMallocCommand) {
             PrintDevMessage("[hw dll] Found Cmd_AddMallocCommand at %p.\n", ORIG_Cmd_AddMallocCommand);
+        }
+        if (ORIG_Cvar_RegisterVariable) {
+            PrintDevMessage("[hw dll] Found Cvar_RegisterVariable at %p (using the %s pattern).\n", ORIG_Cvar_RegisterVariable, pattern->name());
+            PrintDevMessage("[hw dll] Found cvar_vars at %p.\n", cvar_vars);
+        }
+        else {
+            PrintDevMessage("[hw dll] Could not find Cvar_RegisterVariable.\n");
+        }
+
+        if (ORIG_Cvar_FindVar) {
+            PrintDevMessage("[hw dll] Found Cvar_FindVar at %p.\n", ORIG_Cvar_FindVar);
+        }
+        else
+        {
+            PrintDevWarning("[hw dll] Could not find Cvar_FindVar.\n");
         }
 
         void* Host_Tell_f;
@@ -254,19 +316,21 @@ void SvenBXT::AddHWStuff() {
     }
 }
 
-/*void SvenBXT::AddCLStuff() {
+void SvenBXT::AddCLStuff() {
     void* handle;
     void* base;
     size_t size;
 
     if (MemUtils::GetModuleInfo(L"client.dll", &handle, &base, &size)) {
-
+        /* CVars registration - START */
+        RegisterCVar(CVars::bxt_hud);
+        /* CVars registration - END */
     }
     else {
         printf("[client dll] Could not get module info of client.dll.\n");
     }
 }
-*/
+
 
 DWORD WINAPI DllMain(_In_ void* _DllHandle, _In_ unsigned long _Reason, _In_opt_ void** unused) {
     if (_Reason == DLL_PROCESS_ATTACH) {

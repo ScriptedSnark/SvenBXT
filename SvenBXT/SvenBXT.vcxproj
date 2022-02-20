@@ -87,10 +87,13 @@
   <ItemGroup>
     <ClCompile Include="cmd_wrapper.hpp" />
     <ClCompile Include="conutils.cpp" />
+    <ClCompile Include="cvars.cpp" />
     <ClCompile Include="SvenBXT.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="conutils.hpp" />
+    <ClInclude Include="cvars.hpp" />
+    <ClInclude Include="hlsdk_mini.hpp" />
     <ClInclude Include="MemUtils.h" />
     <ClInclude Include="SvenBXT.hpp" />
     <ClInclude Include="patterns.hpp" />
