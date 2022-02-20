@@ -15,4 +15,7 @@ typedef struct SvenBXT {
     static void Main();
 } SvenBXT;
 
+cl_enginefunc_t* pEngfuncs;
+
 extern SvenBXT* svenbxt = new SvenBXT();
+
