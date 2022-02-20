@@ -85,6 +85,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="cmd_wrapper.hpp" />
     <ClCompile Include="conutils.cpp" />
     <ClCompile Include="SvenBXT.cpp" />
   </ItemGroup>

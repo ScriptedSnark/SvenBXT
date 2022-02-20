@@ -1,5 +1,6 @@
 #include "SvenBXT.hpp"
 #include "conutils.hpp"
+#include "cmd_wrapper.hpp"
 
 static FILE* logfile = nullptr;
 
@@ -89,29 +90,36 @@ void __cdecl Cmd_AddMallocCommand(const char* name, void(*func)(void), int flags
     ORIG_Cmd_AddMallocCommand(name, func, flags);
 }
 
-template<typename Callable> union storage {
-	storage() {}
-	std::decay_t<Callable> callable;
+typedef int(__cdecl* _Cmd_Argc) ();
+_Cmd_Argc ORIG_Cmd_Argc;
+typedef char* (__cdecl* _Cmd_Args) ();
+_Cmd_Args ORIG_Cmd_Args;
+typedef char* (__cdecl* _Cmd_Argv) (unsigned n);
+_Cmd_Argv ORIG_Cmd_Argv;
+
+
+struct CmdFuncs
+{
+    inline static void AddCommand(const char* name, void (*handler)())
+    {
+        ORIG_Cmd_AddMallocCommand(name, handler, 2);  // 2 - Cmd_AddGameCommand.
+    }
+
+    inline static const char* Argv(int i)
+    {
+        return ORIG_Cmd_Argv(i);
+    }
+
+    inline static int Argc()
+    {
+        return ORIG_Cmd_Argc();
+    }
+
+    inline static void UsagePrint(const char* s)
+    {
+        return ORIG_Con_Printf("%s\n", s);
+    }
 };
-
-template<int, typename Callable, typename Ret, typename... Args> auto funptr_(Callable&& c, Ret(*)(Args...)) {
-	static bool used = false;
-	static storage<Callable> s;
-	using type = decltype(s.callable);
-
-	if (used)
-		s.callable.~type();
-	new (&s.callable) type(std::forward<Callable>(c));
-	used = true;
-
-	return [](Args... args) -> Ret {
-		return Ret(s.callable(std::forward<Args>(args)...));
-	};
-}
-
-template<typename Fun, int N = 0, typename Callable> Fun* funptr(Callable&& c) {
-	return funptr_<N>(std::forward<Callable>(c), (Fun*)nullptr);
-}
 
 void SvenBXT::Main() {
     ConUtils::Init();
@@ -127,6 +135,7 @@ void SvenBXT::AddBXTStuff() {
         ORIG_Cbuf_AddText = reinterpret_cast<_Cbuf_AddText>(MemUtils::GetSymbolAddress(handle, "Cbuf_AddText"));
         ORIG_Cmd_AddMallocCommand = reinterpret_cast<_Cmd_AddMallocCommand>(MemUtils::GetSymbolAddress(handle, "Cmd_AddMallocCommand"));
         ORIG_Con_Printf = reinterpret_cast<_Con_Printf>(MemUtils::GetSymbolAddress(handle, "ORIG_Con_Printf"));
+
         auto utils = Utils::Utils(handle, base, size);
         auto fCbuf_AddText = utils.FindAsync(ORIG_Cbuf_AddText, patterns::engine::Cbuf_AddText);
         auto fCmd_AddMallocCommand = utils.FindAsync(ORIG_Cmd_AddMallocCommand, patterns::engine::Cmd_AddMallocCommand);
@@ -138,6 +147,53 @@ void SvenBXT::AddBXTStuff() {
         if (ORIG_Cmd_AddMallocCommand) {
             PrintDevMessage("[hw dll] Found Cmd_AddMallocCommand at %p.\n", ORIG_Cmd_AddMallocCommand);
         }
+
+        void* Host_Tell_f;
+        auto fHost_Tell_f = utils.FindAsync(
+            Host_Tell_f,
+            patterns::engine::Host_Tell_f,
+            [&](auto pattern) {
+                uintptr_t offCmd_Argc, offCmd_Args, offCmd_Argv;
+                switch (pattern - patterns::engine::Host_Tell_f.cbegin())
+                {
+                default:
+                case 0: // SteamPipe.
+                    offCmd_Argc = 28;
+                    offCmd_Args = 42;
+                    offCmd_Argv = 145;
+                    break;
+                case 1: // NGHL.
+                    offCmd_Argc = 24;
+                    offCmd_Args = 38;
+                    offCmd_Argv = 143;
+                    break;
+                case 2: // 4554.
+                    offCmd_Argc = 25;
+                    offCmd_Args = 39;
+                    offCmd_Argv = 144;
+                    break;
+                case 4: // Sven-8832
+                    offCmd_Argc = 44;
+                    offCmd_Args = 59;
+                    offCmd_Argv = 163;
+                    break;
+                }
+
+                auto f = reinterpret_cast<uintptr_t>(Host_Tell_f);
+                ORIG_Cmd_Argc = reinterpret_cast<_Cmd_Argc>(
+                    *reinterpret_cast<uintptr_t*>(f + offCmd_Argc)
+                    + (f + offCmd_Argc + 4)
+                    );
+                ORIG_Cmd_Args = reinterpret_cast<_Cmd_Args>(
+                    *reinterpret_cast<uintptr_t*>(f + offCmd_Args)
+                    + (f + offCmd_Args + 4)
+                    );
+                ORIG_Cmd_Argv = reinterpret_cast<_Cmd_Argv>(
+                    *reinterpret_cast<uintptr_t*>(f + offCmd_Argv)
+                    + (f + offCmd_Argv + 4)
+                    );
+            });
+
         void* Host_AutoSave_f;
         auto fHost_AutoSave_f = utils.FindAsync(
             Host_AutoSave_f,
@@ -161,11 +217,35 @@ void SvenBXT::AddBXTStuff() {
                 }
             });
 
-        /* COMMANDS START */
+        /* COMMANDS START - STRUCTS */
 
-        Cmd_AddMallocCommand("bxt_version", funptr<void()>([&]() {
-            ORIG_Con_Printf(const_cast<char*>("Build time: %s - %s\n"), __DATE__, __TIME__);
-        }), 2);
+        struct Cmd_BXT_Append
+        {
+            USAGE("Usage: bxt_append <command>\n Appends command to the end of the command buffer, similar to how special appends _special.\n");
+
+            static void handler(const char* command)
+            {
+                ORIG_Cbuf_AddText(command);
+                ORIG_Cbuf_AddText("\n");
+            }
+        };
+
+        struct Cmd_BXT_Version
+        {
+            USAGE("BXT version: " __TIMESTAMP__);
+
+            static void handler(const char* command)
+            {
+                ORIG_Con_Printf("BXT version: %s\n", __TIMESTAMP__);
+            }
+        };
+        /* COMMANDS START - CMDWRAPPER */
+
+        using CmdWrapper::Handler;
+        typedef CmdWrapper::CmdWrapper<CmdFuncs> wrapper;
+
+        wrapper::Add<Cmd_BXT_Append, Handler<const char*>>("bxt_append");
+        wrapper::Add<Cmd_BXT_Version, Handler<const char*>>("bxt_version");
 
         /* COMMANDS END */
     } else {
