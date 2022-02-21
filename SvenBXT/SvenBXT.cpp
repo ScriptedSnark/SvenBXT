@@ -169,7 +169,7 @@ void SvenBXT::AddHWStuff() {
         ORIG_Cvar_FindVar = reinterpret_cast<_Cvar_FindVar>(MemUtils::GetSymbolAddress(handle, "ORIG_Cvar_FindVar"));
         ORIG_Cvar_RegisterVariable = reinterpret_cast<_Cvar_RegisterVariable>(MemUtils::GetSymbolAddress(handle, "Cvar_RegisterVariable"));
         cvar_vars = reinterpret_cast<cvar_t**>(MemUtils::GetSymbolAddress(handle, "cvar_vars"));
-        svs = reinterpret_cast<svs_t*>(MemUtils::GetSymbolAddress(handle, "a52fSVS"));
+        svs = reinterpret_cast<svs_t*>(MemUtils::GetSymbolAddress(handle, "svs"));
 
         auto utils = Utils::Utils(handle, base, size);
         auto fCbuf_AddText = utils.FindAsync(ORIG_Cbuf_AddText, patterns::engine::Cbuf_AddText);
