@@ -5,6 +5,15 @@
 
 static FILE* logfile = nullptr;
 cvar_t** cvar_vars;
+ptrdiff_t offEdict;
+struct client_t;
+struct svs_t
+{
+    char unk[4];
+    client_t* clients;
+    int num_clients;
+};
+svs_t* svs;
 
 /* Dev Messages */
 static void Log(const char* prefix, const char* msg)
@@ -160,6 +169,7 @@ void SvenBXT::AddHWStuff() {
         ORIG_Cvar_FindVar = reinterpret_cast<_Cvar_FindVar>(MemUtils::GetSymbolAddress(handle, "ORIG_Cvar_FindVar"));
         ORIG_Cvar_RegisterVariable = reinterpret_cast<_Cvar_RegisterVariable>(MemUtils::GetSymbolAddress(handle, "Cvar_RegisterVariable"));
         cvar_vars = reinterpret_cast<cvar_t**>(MemUtils::GetSymbolAddress(handle, "cvar_vars"));
+        svs = reinterpret_cast<svs_t*>(MemUtils::GetSymbolAddress(handle, "a52fSVS"));
 
         auto utils = Utils::Utils(handle, base, size);
         auto fCbuf_AddText = utils.FindAsync(ORIG_Cbuf_AddText, patterns::engine::Cbuf_AddText);
@@ -270,15 +280,26 @@ void SvenBXT::AddHWStuff() {
                         *reinterpret_cast<ptrdiff_t*>(f + 33)
                         + (f + 37)
                     );
+                    svs = reinterpret_cast<svs_t*>(*reinterpret_cast<uintptr_t*>(f + 45) - 8);
+                    offEdict = *reinterpret_cast<ptrdiff_t*>(f + 122);
                     break;
                 case 1:
                     ORIG_Con_Printf = reinterpret_cast<_Con_Printf>(
                         *reinterpret_cast<ptrdiff_t*>(f + 28)
                         + (f + 32)
                     );
+                    svs = reinterpret_cast<svs_t*>(*reinterpret_cast<uintptr_t*>(f + 40) - 8);
+                    offEdict = *reinterpret_cast<ptrdiff_t*>(f + 118);
                     break;
                 }
             });
+
+        if (svs) {
+            PrintDevMessage("[hw dll] Found svs at %p.\n", svs);
+            offEdict = 0x4a84;
+        }
+        else
+            PrintDevWarning("[hw dll] Could not find svs.\n");
 
         /* COMMANDS START - STRUCTS */
 
@@ -315,6 +336,21 @@ void SvenBXT::AddHWStuff() {
     } else {
         PrintWarning("[hw dll] Could not get module info of hw.dll.\n");
     }
+}
+
+bool TryGettingAccurateInfo(float origin[3], float velocity[3])
+{
+    if (!svs || svs->num_clients < 1)
+        return false;
+
+    edict_t* pl = *reinterpret_cast<edict_t**>(reinterpret_cast<uintptr_t>(svs->clients) + offEdict);
+    origin[0] = pl->v.origin[0];
+    origin[1] = pl->v.origin[1];
+    origin[2] = pl->v.origin[2];
+    velocity[0] = pl->v.velocity[0];
+    velocity[1] = pl->v.velocity[1];
+    velocity[2] = pl->v.velocity[2];
+    return true;
 }
 
 void SvenBXT::AddCLStuff() {
