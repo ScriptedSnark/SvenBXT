@@ -353,6 +353,7 @@ bool TryGettingAccurateInfo(float origin[3], float velocity[3])
     return true;
 }
 
+
 void SvenBXT::AddCLStuff() {
     void* handle;
     void* base;
@@ -397,7 +398,7 @@ void SvenBXT::AddCLStuff() {
                 if (addr)
                 {
                     pEngfuncs = *reinterpret_cast<cl_enginefunc_t**>(addr + 1);
-                    PrintDevWarning("[client dll] pEngfuncs is %p.\n", pEngfuncs);
+                    PrintDevMessage("[client dll] pEngfuncs is %p.\n", pEngfuncs);
                 }
                 else
                 {
