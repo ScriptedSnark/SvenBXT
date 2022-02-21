@@ -321,8 +321,8 @@ void SvenBXT::AddCLStuff() {
     void* handle;
     void* base;
     size_t size;
-
     if (MemUtils::GetModuleInfo(L"client.dll", &handle, &base, &size)) {
+        auto utils = Utils::Utils(handle, base, size);
         /* gEngfuncs hook - START */
         pEngfuncs = reinterpret_cast<cl_enginefunc_t*>(MemUtils::GetSymbolAddress(handle, "gEngfuncs"));
         if (pEngfuncs) {
@@ -375,6 +375,12 @@ void SvenBXT::AddCLStuff() {
                 PrintDevWarning("[client dll] Couldn't get the address of Initialize.\n");
                 PrintDevWarning("Custom HUD is not available.\n");
                 PrintDevWarning("Clientside logging is not available.\n");
+            }
+
+            if (pEngfuncs)
+            {
+                const char* gamedir = pEngfuncs->pfnGetGameDirectory();
+                PrintDevMessage("[client dll] Game directory is %s.", gamedir);
             }
         }
         /* gEngfuncs hook - END */

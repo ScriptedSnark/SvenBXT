@@ -118,6 +118,5 @@ namespace CVars
 {
 	// Engine CVars
 	extern CVarWrapper bxt_hud;
-
 	extern const std::vector<CVarWrapper*> allCVars;
 }
