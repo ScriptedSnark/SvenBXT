@@ -220,7 +220,7 @@ namespace CustomHud
 
 	static inline int DrawNumber(int number, int x, int y, int fieldMinWidth = 1)
 	{
-		return DrawNumber(number, x, y, 255, 160, 0, fieldMinWidth);
+		return DrawNumber(number, x, y, 255, 160, 0, fieldMinWidth); // TODO: customize BXT hud color
 	}
 
 	static void GetPosition(const CVarWrapper& Offset, const CVarWrapper& Anchor, int* x, int* y, int rx = 0, int ry = 0)

@@ -304,7 +304,6 @@ void SvenBXT::AddHWStuff() {
             static void handler(const char* command)
             {
                 ORIG_Con_Printf("Compilation time: %s\n", __TIMESTAMP__);
-                CustomHud::Draw();
             }
         };
 
