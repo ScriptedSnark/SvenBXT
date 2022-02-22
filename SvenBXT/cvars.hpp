@@ -118,5 +118,8 @@ namespace CVars
 {
 	// Engine CVars
 	extern CVarWrapper bxt_hud;
+	extern CVarWrapper bxt_hud_speedometer;
+	extern CVarWrapper bxt_hud_speedometer_offset;
+	extern CVarWrapper bxt_hud_speedometer_anchor;
 	extern const std::vector<CVarWrapper*> allCVars;
 }

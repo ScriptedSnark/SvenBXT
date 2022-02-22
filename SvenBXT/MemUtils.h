@@ -12,6 +12,7 @@
 #include <iostream>
 #include "patterns.hpp"
 #include <functional>
+#include "DetoursUtils.hpp"
 #pragma comment(lib, "psapi.lib")
 
 namespace MemUtils {
@@ -307,7 +308,12 @@ namespace MemUtils {
 	namespace detail
 	{
 		void Intercept(const std::wstring& moduleName, size_t n, const std::pair<void**, void*> funcPairs[]);
-		void RemoveInterception(const std::wstring& moduleName, size_t n, void** const functions[]);
+		
+
+		void Intercept(const std::wstring& moduleName, size_t n, const std::pair<void**, void*> funcPairs[])
+		{
+			DetoursUtils::AttachDetours(moduleName, n, funcPairs);
+		}
 
 		template<typename FuncType, size_t N>
 		inline void Intercept(const std::wstring& moduleName, std::array<std::pair<void**, void*>, N>& funcPairs, FuncType& target, typename identity<FuncType>::type detour)
@@ -337,12 +343,5 @@ namespace MemUtils {
 		std::array<std::pair<void**, void*>, sizeof...(rest) / 2 + 1> funcPairs;
 		funcPairs[0] = { reinterpret_cast<void**>(&target), reinterpret_cast<void*>(detour) };
 		detail::Intercept(moduleName, funcPairs, rest...);
-	}
-
-	template<typename... FuncType>
-	inline void RemoveInterception(const std::wstring& moduleName, FuncType&... functions)
-	{
-		void** const temp[] = { reinterpret_cast<void**>(&functions)... };
-		detail::RemoveInterception(moduleName, sizeof...(functions), temp);
 	}
 }

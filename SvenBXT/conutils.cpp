@@ -1,5 +1,78 @@
 #include <Windows.h>
+#include <iostream>
+#include <string>
+#include <mutex>
 #include "conutils.hpp"
+#include "stdio.h"
+
+static FILE* logfile = nullptr;
+/* Dev Messages */
+static void Log(const char* prefix, const char* msg)
+{
+	if (logfile)
+	{
+		auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+		auto ltime = std::localtime(&time);
+		fprintf(logfile, "[%02d:%02d:%02d] [%s] %s", ltime->tm_hour, ltime->tm_min, ltime->tm_sec, prefix, msg);
+		fflush(logfile);
+	}
+}
+
+void PrintMessage(const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+
+	char temp[1024];
+	vsprintf_s(temp, format, args);
+
+	va_end(args);
+
+	ConUtils::Log(temp);
+	Log("Msg", temp);
+}
+
+void PrintDevMessage(const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+
+	char temp[1024];
+	vsprintf_s(temp, format, args);
+
+	va_end(args);
+
+	ConUtils::Log(temp, FOREGROUND_RED | FOREGROUND_GREEN);
+	Log("DevMsg", temp);
+}
+
+void PrintWarning(const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+
+	char temp[1024];
+	vsprintf_s(temp, format, args);
+
+	va_end(args);
+
+	ConUtils::Log(temp, FOREGROUND_RED | FOREGROUND_INTENSITY);
+	Log("Warning", temp);
+}
+
+void PrintDevWarning(const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+
+	char temp[1024];
+	vsprintf_s(temp, format, args);
+
+	va_end(args);
+
+	ConUtils::Log(temp, FOREGROUND_RED);
+	Log("DevWarning", temp);
+}
 
 namespace ConUtils
 {

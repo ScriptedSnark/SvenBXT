@@ -1,9 +1,9 @@
 #include "SvenBXT.hpp"
-#include "conutils.hpp"
 #include "cmd_wrapper.hpp"
 #include "cvars.hpp"
+#include "pengfuncs.h"
+#include "hud_custom.hpp"
 
-static FILE* logfile = nullptr;
 cvar_t** cvar_vars;
 ptrdiff_t offEdict;
 struct client_t;
@@ -15,75 +15,7 @@ struct svs_t
 };
 svs_t* svs;
 
-/* Dev Messages */
-static void Log(const char* prefix, const char* msg)
-{
-    if (logfile)
-    {
-        auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-        auto ltime = std::localtime(&time);
-        fprintf(logfile, "[%02d:%02d:%02d] [%s] %s", ltime->tm_hour, ltime->tm_min, ltime->tm_sec, prefix, msg);
-        fflush(logfile);
-    }
-}
-
-void PrintMessage(const char* format, ...)
-{
-    va_list args;
-    va_start(args, format);
-
-    char temp[1024];
-    vsprintf_s(temp, format, args);
-
-    va_end(args);
-
-    ConUtils::Log(temp);
-    Log("Msg", temp);
-}
-
-void PrintDevMessage(const char* format, ...)
-{
-    va_list args;
-    va_start(args, format);
-
-    char temp[1024];
-    vsprintf_s(temp, format, args);
-
-    va_end(args);
-
-    ConUtils::Log(temp, FOREGROUND_RED | FOREGROUND_GREEN);
-    Log("DevMsg", temp);
-}
-
-void PrintWarning(const char* format, ...)
-{
-    va_list args;
-    va_start(args, format);
-
-    char temp[1024];
-    vsprintf_s(temp, format, args);
-
-    va_end(args);
-
-    ConUtils::Log(temp, FOREGROUND_RED | FOREGROUND_INTENSITY);
-    Log("Warning", temp);
-}
-
-void PrintDevWarning(const char* format, ...)
-{
-    va_list args;
-    va_start(args, format);
-
-    char temp[1024];
-    vsprintf_s(temp, format, args);
-
-    va_end(args);
-
-    ConUtils::Log(temp, FOREGROUND_RED);
-    Log("DevWarning", temp);
-}
 /* END */
-
 typedef void(__cdecl* _Con_Printf) (const char* fmt, ...);
 _Con_Printf ORIG_Con_Printf;
 
@@ -138,6 +70,8 @@ struct CmdFuncs
     }
 };
 
+/* CLIENT - START */
+
 void RegisterCVar(CVarWrapper& cvar)
 {
     if (!ORIG_Cvar_FindVar || !ORIG_Cvar_RegisterVariable)
@@ -150,6 +84,55 @@ void RegisterCVar(CVarWrapper& cvar)
     cvar.MarkAsStale();
 }
 
+
+typedef void(__cdecl* _HUD_Init)();
+_HUD_Init ORIG_HUD_Init;
+
+typedef void(__cdecl* _HUD_VidInit)();
+_HUD_VidInit ORIG_HUD_VidInit;
+
+typedef void(__cdecl* _HUD_Reset)();
+_HUD_Reset ORIG_HUD_Reset;
+
+typedef void(__cdecl* _HUD_Redraw)(float time, int intermission);
+_HUD_Redraw ORIG_HUD_Redraw;
+
+void __cdecl HOOKED_HUD_Init_Func() {
+    CustomHud::Init();
+}
+
+void __cdecl HOOKED_HUD_Init() {
+    HOOKED_HUD_Init_Func();
+}
+
+void __cdecl HOOKED_HUD_VidInit_Func() {
+    CustomHud::VidInit();
+}
+
+void __cdecl HOOKED_HUD_VidInit() {
+    HOOKED_HUD_VidInit_Func();
+}
+
+void __cdecl HOOKED_HUD_Reset_Func() {
+    //ORIG_HUD_Reset();
+    CustomHud::InitIfNecessary();
+    CustomHud::VidInit();
+}
+
+void __cdecl HOOKED_HUD_Reset() {
+    HOOKED_HUD_Reset_Func();
+}
+
+void __cdecl HOOKED_HUD_Redraw_Func(float time, int intermission) {
+    //ORIG_HUD_Redraw(NULL, NULL);
+    CustomHud::Draw();
+}
+
+void __cdecl HOOKED_HUD_Redraw(float time, int intermission) {
+    HOOKED_HUD_Redraw_Func(time, intermission);
+}
+
+/* CLIENT - END */
 
 void SvenBXT::Main() {
     ConUtils::Init();
@@ -321,6 +304,7 @@ void SvenBXT::AddHWStuff() {
             static void handler(const char* command)
             {
                 ORIG_Con_Printf("Compilation time: %s\n", __TIMESTAMP__);
+                CustomHud::Draw();
             }
         };
 
@@ -354,11 +338,13 @@ bool TryGettingAccurateInfo(float origin[3], float velocity[3])
 }
 
 
+
 void SvenBXT::AddCLStuff() {
     void* handle;
     void* base;
     size_t size;
     if (MemUtils::GetModuleInfo(L"client.dll", &handle, &base, &size)) {
+        const std::wstring& moduleName = L"client.dll";
         auto utils = Utils::Utils(handle, base, size);
         /* gEngfuncs hook - START */
         pEngfuncs = reinterpret_cast<cl_enginefunc_t*>(MemUtils::GetSymbolAddress(handle, "gEngfuncs"));
@@ -417,22 +403,72 @@ void SvenBXT::AddCLStuff() {
             if (pEngfuncs)
             {
                 const char* gamedir = pEngfuncs->pfnGetGameDirectory();
-                PrintDevMessage("[client dll] Game directory is %s.", gamedir);
+                PrintDevMessage("[client dll] Game directory is %s.\n", gamedir);
             }
         }
         /* gEngfuncs hook - END */
 
+        /* HUD Functions hook - START */
 
-        /* CVars registration - START */
-        RegisterCVar(CVars::bxt_hud);
-        /* CVars registration - END */
+        ORIG_HUD_Init = reinterpret_cast<_HUD_Init>(MemUtils::GetSymbolAddress(handle, "HUD_Init"));
+        ORIG_HUD_VidInit = reinterpret_cast<_HUD_VidInit>(MemUtils::GetSymbolAddress(handle, "HUD_VidInit"));
+        ORIG_HUD_Reset = reinterpret_cast<_HUD_Reset>(MemUtils::GetSymbolAddress(handle, "HUD_Reset"));
+        ORIG_HUD_Redraw = (decltype(ORIG_HUD_Redraw))(MemUtils::GetSymbolAddress(handle, "HUD_Redraw"));
+
+        MemUtils::AddSymbolLookupHook(handle, reinterpret_cast<void*>(ORIG_HUD_Init), reinterpret_cast<void*>(HOOKED_HUD_Init));
+        MemUtils::AddSymbolLookupHook(handle, reinterpret_cast<void*>(ORIG_HUD_VidInit), reinterpret_cast<void*>(HOOKED_HUD_VidInit));
+        MemUtils::AddSymbolLookupHook(handle, reinterpret_cast<void*>(ORIG_HUD_Reset), reinterpret_cast<void*>(HOOKED_HUD_Reset));
+        MemUtils::AddSymbolLookupHook(handle, reinterpret_cast<void*>(ORIG_HUD_Redraw), reinterpret_cast<void*>(HOOKED_HUD_Redraw));
+        MemUtils::Intercept(moduleName,
+            ORIG_HUD_Init, HOOKED_HUD_Init,
+            ORIG_HUD_VidInit, HOOKED_HUD_VidInit,
+            ORIG_HUD_Reset, HOOKED_HUD_Reset,
+            ORIG_HUD_Redraw, HOOKED_HUD_Redraw);
+
+        if (ORIG_HUD_Init)
+        {
+            PrintDevMessage("[client dll] Found HUD_Init at %p.\n", ORIG_HUD_Init);
+            RegisterCVar(CVars::bxt_hud);
+            RegisterCVar(CVars::bxt_hud_speedometer);
+            RegisterCVar(CVars::bxt_hud_speedometer_offset);
+            RegisterCVar(CVars::bxt_hud_speedometer_anchor);
+
+            HOOKED_HUD_Init_Func();
+        }
+        else
+            PrintDevWarning("[client dll] Could not find HUD_Init.\n");
+
+        if (ORIG_HUD_VidInit)
+        {
+            PrintDevMessage("[client dll] Found HUD_VidInit at %p.\n", ORIG_HUD_VidInit);
+            HOOKED_HUD_VidInit_Func();
+        }
+        else
+            PrintDevWarning("[client dll] Could not find HUD_VidInit.\n");
+
+        if (ORIG_HUD_Reset)
+        {
+            PrintDevMessage("[client dll] Found HUD_Reset at %p.\n", ORIG_HUD_Reset);
+            HOOKED_HUD_Reset_Func();
+        }
+        else
+            PrintDevWarning("[client dll] Could not find HUD_Reset.\n");
+
+        if (ORIG_HUD_Redraw)
+        {
+            HOOKED_HUD_Redraw_Func(NULL, NULL);
+            CustomHud::Draw();
+            PrintDevMessage("[client dll] Found HUD_Redraw at %p.\n", ORIG_HUD_Redraw);
+        }
+        else
+            PrintDevWarning("[client dll] Could not find HUD_Redraw.\n");
+
+        /* HUD Functions hook - END */
     }
     else {
         printf("[client dll] Could not get module info of client.dll.\n");
     }
 }
-
-
 DWORD WINAPI DllMain(_In_ void* _DllHandle, _In_ unsigned long _Reason, _In_opt_ void** unused) {
     if (_Reason == DLL_PROCESS_ATTACH) {
         DisableThreadLibraryCalls(reinterpret_cast<HMODULE>(_DllHandle));
