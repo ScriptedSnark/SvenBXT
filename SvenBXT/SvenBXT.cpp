@@ -3,6 +3,7 @@
 #include "cvars.hpp"
 #include "pengfuncs.h"
 #include "hud_custom.hpp"
+#include "MinHook/MinHook.h"
 
 cvar_t** cvar_vars;
 ptrdiff_t offEdict;
@@ -114,7 +115,6 @@ void __cdecl HOOKED_HUD_VidInit() {
 }
 
 void __cdecl HOOKED_HUD_Reset_Func() {
-    //ORIG_HUD_Reset();
     CustomHud::InitIfNecessary();
     CustomHud::VidInit();
 }
@@ -124,7 +124,6 @@ void __cdecl HOOKED_HUD_Reset() {
 }
 
 void __cdecl HOOKED_HUD_Redraw_Func(float time, int intermission) {
-    //ORIG_HUD_Redraw(NULL, NULL);
     CustomHud::Draw();
 }
 
@@ -321,6 +320,30 @@ void SvenBXT::AddHWStuff() {
     }
 }
 
+/*void Cmd_Multiwait()
+{
+    Cmd_Multiwait_f();
+}
+
+void Cmd_Multiwait_f()
+{
+    if (ORIG_Cmd_Argc() == 1) {
+        ORIG_Cbuf_InsertText("wait\n");
+        return;
+    }
+
+    std::ostringstream ss;
+    int num = std::atoi(ORIG_Cmd_Argv(1));
+    if (num > 1)
+        ss << "wait\nw " << num - 1 << '\n';
+    else if (num == 1)
+        ss << "wait\n";
+    else
+        return;
+
+    ORIG_Cbuf_InsertText(ss.str().c_str());
+}*/
+
 bool TryGettingAccurateInfo(float origin[3], float velocity[3])
 {
     if (!svs || svs->num_clients < 1)
@@ -432,7 +455,7 @@ void SvenBXT::AddCLStuff() {
             RegisterCVar(CVars::bxt_hud_speedometer_offset);
             RegisterCVar(CVars::bxt_hud_speedometer_anchor);
 
-            HOOKED_HUD_Init_Func();
+            HOOKED_HUD_Init();
         }
         else
             PrintDevWarning("[client dll] Could not find HUD_Init.\n");
@@ -440,7 +463,7 @@ void SvenBXT::AddCLStuff() {
         if (ORIG_HUD_VidInit)
         {
             PrintDevMessage("[client dll] Found HUD_VidInit at %p.\n", ORIG_HUD_VidInit);
-            HOOKED_HUD_VidInit_Func();
+            HOOKED_HUD_VidInit();
         }
         else
             PrintDevWarning("[client dll] Could not find HUD_VidInit.\n");
@@ -448,20 +471,18 @@ void SvenBXT::AddCLStuff() {
         if (ORIG_HUD_Reset)
         {
             PrintDevMessage("[client dll] Found HUD_Reset at %p.\n", ORIG_HUD_Reset);
-            HOOKED_HUD_Reset_Func();
+            HOOKED_HUD_Reset();
         }
         else
             PrintDevWarning("[client dll] Could not find HUD_Reset.\n");
 
         if (ORIG_HUD_Redraw)
         {
-            HOOKED_HUD_Redraw_Func(NULL, NULL);
-            CustomHud::Draw();
+            HOOKED_HUD_Redraw(NULL, NULL);
             PrintDevMessage("[client dll] Found HUD_Redraw at %p.\n", ORIG_HUD_Redraw);
         }
         else
             PrintDevWarning("[client dll] Could not find HUD_Redraw.\n");
-
         /* HUD Functions hook - END */
     }
     else {
@@ -471,6 +492,7 @@ void SvenBXT::AddCLStuff() {
 DWORD WINAPI DllMain(_In_ void* _DllHandle, _In_ unsigned long _Reason, _In_opt_ void** unused) {
     if (_Reason == DLL_PROCESS_ATTACH) {
         DisableThreadLibraryCalls(reinterpret_cast<HMODULE>(_DllHandle));
+        MH_Initialize();
         SvenBXT::Main();
 
         return 1;

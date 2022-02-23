@@ -2,6 +2,7 @@
 
 #include "DetoursUtils.hpp"
 #include <cassert>
+#include "conutils.hpp"
 
 namespace DetoursUtils
 {
@@ -25,12 +26,14 @@ namespace DetoursUtils
 				auto status = MH_CreateHook(original, detour, target);
 				if (status != MH_OK)
 				{
+					PrintDevWarning("[MinHook] Something went wrong! Status: %p\n", status);
 					continue;
 				}
 
 				status = MH_QueueEnableHook(original);
 				if (status != MH_OK)
 				{
+					PrintDevWarning("[MinHook] Something went wrong! Status: %p\n", status);
 					continue;
 				}
 
