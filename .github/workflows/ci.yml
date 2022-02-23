@@ -20,7 +20,7 @@ jobs:
       - name: Move builded DLL into specific directory
         run: |
             mkdir compiled
-            mv Release/SvenBXT.dll ./compiled
+            mv ../Release/SvenBXT.dll ./compiled
       - name: Deploy
         uses: actions/upload-artifact@v2.2.4
         with:
