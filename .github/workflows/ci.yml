@@ -20,8 +20,8 @@ jobs:
       - name: Move builded SvenBXT into specific directory
         run: |
             mkdir compiled
-            mv SvenBXT/Release/SvenBXT.dll ./compiled
-            mv SvenBXT/Release/Injector.exe ./compiled
+            mv Release/SvenBXT.dll ./compiled
+            mv Release/Injector.exe ./compiled
       - name: Deploy
         uses: actions/upload-artifact@v2.2.4
         with:
