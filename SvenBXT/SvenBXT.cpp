@@ -409,9 +409,9 @@ void SvenBXT::AddCLStuff() {
 
         /* HUD Functions hook - START */
 
-        ORIG_HUD_Init = reinterpret_cast<_HUD_Init>(MemUtils::GetSymbolAddress(handle, "HUD_Init"));
-        ORIG_HUD_VidInit = reinterpret_cast<_HUD_VidInit>(MemUtils::GetSymbolAddress(handle, "HUD_VidInit"));
-        ORIG_HUD_Reset = reinterpret_cast<_HUD_Reset>(MemUtils::GetSymbolAddress(handle, "HUD_Reset"));
+        ORIG_HUD_Init = (decltype(ORIG_HUD_Init))(MemUtils::GetSymbolAddress(handle, "HUD_Init"));
+        ORIG_HUD_VidInit = (decltype(ORIG_HUD_VidInit))(MemUtils::GetSymbolAddress(handle, "HUD_VidInit"));
+        ORIG_HUD_Reset = (decltype(ORIG_HUD_Reset))(MemUtils::GetSymbolAddress(handle, "HUD_Reset"));
         ORIG_HUD_Redraw = (decltype(ORIG_HUD_Redraw))(MemUtils::GetSymbolAddress(handle, "HUD_Redraw"));
 
         MemUtils::AddSymbolLookupHook(handle, reinterpret_cast<void*>(ORIG_HUD_Init), reinterpret_cast<void*>(HOOKED_HUD_Init));
