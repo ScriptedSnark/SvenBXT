@@ -4,6 +4,7 @@
 #include "pengfuncs.h"
 #include "hud_custom.hpp"
 #include "MinHook/MinHook.h"
+#include <sstream>
 
 cvar_t** cvar_vars;
 ptrdiff_t offEdict;
@@ -29,9 +30,15 @@ _Cvar_RegisterVariable ORIG_Cvar_RegisterVariable;
 typedef cvar_t* (__cdecl* _Cvar_FindVar) (const char* name);
 _Cvar_FindVar ORIG_Cvar_FindVar;
 
+typedef void(_cdecl* _Cbuf_InsertText)(const char* text);
+_Cbuf_InsertText ORIG_Cbuf_InsertText;
 
 void Cbuf_AddText(const char* text) {
     ORIG_Cbuf_AddText(text);
+}
+
+void Cbuf_InsertText(const char* text) {
+    ORIG_Cbuf_InsertText(text);
 }
 
 typedef void(__cdecl* _Cmd_AddMallocCommand) (const char* name, void(*func)(void), int flags);
@@ -139,6 +146,25 @@ void SvenBXT::Main() {
     svenbxt->AddCLStuff();
 }
 
+void Cmd_Multiwait_f()
+{
+    if (ORIG_Cmd_Argc() == 1) {
+        ORIG_Cbuf_InsertText("wait\n");
+        return;
+    }
+
+    std::ostringstream ss;
+    int num = std::atoi(ORIG_Cmd_Argv(1));
+    if (num > 1)
+        ss << "wait\nw " << num - 1 << '\n';
+    else if (num == 1)
+        ss << "wait\n";
+    else
+        return;
+
+    ORIG_Cbuf_InsertText(ss.str().c_str());
+}
+
 void SvenBXT::AddHWStuff() {
     void* handle;
     void* base;
@@ -146,6 +172,7 @@ void SvenBXT::AddHWStuff() {
 
     if (MemUtils::GetModuleInfo(L"hw.dll", &handle, &base, &size)) {
         ORIG_Cbuf_AddText = reinterpret_cast<_Cbuf_AddText>(MemUtils::GetSymbolAddress(handle, "Cbuf_AddText"));
+        ORIG_Cbuf_InsertText = reinterpret_cast<_Cbuf_InsertText>(MemUtils::GetSymbolAddress(handle, "Cbuf_InsertText"));
         ORIG_Cmd_AddMallocCommand = reinterpret_cast<_Cmd_AddMallocCommand>(MemUtils::GetSymbolAddress(handle, "Cmd_AddMallocCommand"));
         ORIG_Con_Printf = reinterpret_cast<_Con_Printf>(MemUtils::GetSymbolAddress(handle, "ORIG_Con_Printf"));
         ORIG_Cvar_FindVar = reinterpret_cast<_Cvar_FindVar>(MemUtils::GetSymbolAddress(handle, "ORIG_Cvar_FindVar"));
@@ -157,6 +184,7 @@ void SvenBXT::AddHWStuff() {
         auto fCbuf_AddText = utils.FindAsync(ORIG_Cbuf_AddText, patterns::engine::Cbuf_AddText);
         auto fCmd_AddMallocCommand = utils.FindAsync(ORIG_Cmd_AddMallocCommand, patterns::engine::Cmd_AddMallocCommand);
         auto fCvar_FindVar = utils.FindAsync(ORIG_Cvar_FindVar, patterns::engine::Cvar_FindVar);
+        auto fCbuf_InsertText = utils.FindAsync(ORIG_Cbuf_InsertText, patterns::engine::Cbuf_InsertText);
         auto pattern = fCbuf_AddText.get();
         auto pattern2 = fCmd_AddMallocCommand.get();
 
@@ -180,9 +208,13 @@ void SvenBXT::AddHWStuff() {
 
         auto pattern3 = fCvar_RegisterVariable.get();
         auto pattern4 = fCvar_FindVar.get();
+        auto pattern5 = fCbuf_InsertText.get();
 
         if (ORIG_Cbuf_AddText) {
             PrintDevMessage("[hw dll] Found Cbuf_AddText at %p.\n", ORIG_Cbuf_AddText);
+        }
+        if (ORIG_Cbuf_InsertText) {
+            PrintDevMessage("[hw dll] Found Cbuf_InsertText at %p.\n", ORIG_Cbuf_InsertText);
         }
         if (ORIG_Cmd_AddMallocCommand) {
             PrintDevMessage("[hw dll] Found Cmd_AddMallocCommand at %p.\n", ORIG_Cmd_AddMallocCommand);
@@ -313,36 +345,13 @@ void SvenBXT::AddHWStuff() {
 
         wrapper::Add<Cmd_BXT_Append, Handler<const char*>>("bxt_append");
         wrapper::Add<Cmd_BXT_Version, Handler<const char*>>("bxt_version");
+        Cmd_AddMallocCommand("w", Cmd_Multiwait_f, 2);
 
         /* COMMANDS END */
     } else {
         PrintWarning("[hw dll] Could not get module info of hw.dll.\n");
     }
 }
-
-/*void Cmd_Multiwait()
-{
-    Cmd_Multiwait_f();
-}
-
-void Cmd_Multiwait_f()
-{
-    if (ORIG_Cmd_Argc() == 1) {
-        ORIG_Cbuf_InsertText("wait\n");
-        return;
-    }
-
-    std::ostringstream ss;
-    int num = std::atoi(ORIG_Cmd_Argv(1));
-    if (num > 1)
-        ss << "wait\nw " << num - 1 << '\n';
-    else if (num == 1)
-        ss << "wait\n";
-    else
-        return;
-
-    ORIG_Cbuf_InsertText(ss.str().c_str());
-}*/
 
 bool TryGettingAccurateInfo(float origin[3], float velocity[3])
 {
