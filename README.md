@@ -4,4 +4,4 @@ SvenBXT is a remake of BunnymodXT for Sven Co-op 5.22+ versions (only 5.25 now).
 
 Currently WIP.
 
-Thanks to xWhitey to project template and some help.
+Thanks to [xWhitey](https://github.com/xWhitey) for project template and some help with learning original BXT code.
