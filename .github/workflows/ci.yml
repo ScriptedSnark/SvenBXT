@@ -16,8 +16,8 @@ jobs:
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@v1.0.3
       - name: Build
-        run: MSBuild.exe SvenBXT/SvenBXT.vcxproj /p:Configuration=Release
-      - name: Move builded DLL into specific directory
+        run: MSBuild.exe SvenBXT.sln /p:Configuration=Release
+      - name: Move builded SvenBXT into specific directory
         run: |
             mkdir compiled
             mv ../Release/SvenBXT.dll ./compiled
