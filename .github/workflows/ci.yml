@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 1 * *' # Monthly
+
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v1.0.3
+      - name: Build
+        run: MSBuild.exe SvenBXT/SvenBXT.vcxproj /p:Configuration=Release
+      - name: Move builded DLL into specific directory
+        run: |
+            mkdir compiled
+            mv Release/SvenBXT.dll ./compiled
+      - name: Deploy
+        uses: actions/upload-artifact@v2.2.4
+        with:
+          name: SvenBXT
+          path: compiled
