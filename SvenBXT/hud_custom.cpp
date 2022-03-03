@@ -251,7 +251,6 @@ namespace CustomHud
 	{
 		if (CVars::bxt_hud_speedometer.GetBool())
 		{
-			PrintDevMessage("[client dll] All is good! Speedometer is OK.\n");
 			int x, y;
 			GetPosition(CVars::bxt_hud_speedometer_offset, CVars::bxt_hud_speedometer_anchor, &x, &y, 0, -2 * NumberHeight);
 			//DrawNumber(143, x, y); - JUST TEST

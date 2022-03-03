@@ -97,6 +97,12 @@
     <ClCompile Include="MinHook\hook.c" />
     <ClCompile Include="MinHook\trampoline.c" />
     <ClCompile Include="SvenBXT.cpp" />
+    <ClCompile Include="udis86\src\decode.c" />
+    <ClCompile Include="udis86\src\itab.c" />
+    <ClCompile Include="udis86\src\syn-att.c" />
+    <ClCompile Include="udis86\src\syn-intel.c" />
+    <ClCompile Include="udis86\src\syn.c" />
+    <ClCompile Include="udis86\src\udis86.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="conutils.hpp" />
@@ -120,6 +126,7 @@
     <ClInclude Include="patterns.hpp" />
     <ClInclude Include="patterns_macros.hpp" />
     <ClInclude Include="ptrns.hpp" />
+    <ClInclude Include="sven_sdk.h" />
     <ClInclude Include="Utils.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

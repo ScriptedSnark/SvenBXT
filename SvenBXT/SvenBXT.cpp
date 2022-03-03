@@ -5,9 +5,12 @@
 #include "hud_custom.hpp"
 #include "MinHook/MinHook.h"
 #include <sstream>
+#include "sven_sdk.h"
+#include "udis86/udis86.h"
 
 cvar_t** cvar_vars;
 ptrdiff_t offEdict;
+cl_clientfunc_t* g_pClientFuncs = NULL;
 struct client_t;
 struct svs_t
 {
@@ -92,8 +95,33 @@ void RegisterCVar(CVarWrapper& cvar)
     cvar.MarkAsStale();
 }
 
+typedef void (*HUD_InitFn)(void);
+typedef int (*HUD_VidInitFn)(void);
+typedef int (*HUD_RedrawFn)(float, int);
 
-typedef void(__cdecl* _HUD_Init)();
+HUD_VidInitFn HUD_VidInit_Original = NULL;
+HUD_InitFn HUD_Init_Original = NULL;
+HUD_RedrawFn HUD_Redraw_Original = NULL;
+
+void HUD_Init_Hooked(void)
+{
+    CustomHud::Init();
+    HUD_Init_Original();
+}
+
+int HUD_VidInit_Hooked(void)
+{
+    CustomHud::VidInit();
+    return HUD_VidInit_Original();
+}
+
+int HUD_Redraw_Hooked(float time, int intermission)
+{
+    CustomHud::Draw();
+    return HUD_Redraw_Original(time, intermission);
+}
+
+/*typedef void(__cdecl* _HUD_Init)();
 _HUD_Init ORIG_HUD_Init;
 
 typedef void(__cdecl* _HUD_VidInit)();
@@ -107,6 +135,7 @@ _HUD_Redraw ORIG_HUD_Redraw;
 
 void __cdecl HOOKED_HUD_Init_Func() {
     CustomHud::Init();
+    ORIG_HUD_Init();
 }
 
 void __cdecl HOOKED_HUD_Init() {
@@ -136,7 +165,7 @@ void __cdecl HOOKED_HUD_Redraw_Func(float time, int intermission) {
 
 void __cdecl HOOKED_HUD_Redraw(float time, int intermission) {
     HOOKED_HUD_Redraw_Func(time, intermission);
-}
+}*/
 
 /* CLIENT - END */
 
@@ -185,6 +214,7 @@ void SvenBXT::AddHWStuff() {
         auto fCmd_AddMallocCommand = utils.FindAsync(ORIG_Cmd_AddMallocCommand, patterns::engine::Cmd_AddMallocCommand);
         auto fCvar_FindVar = utils.FindAsync(ORIG_Cvar_FindVar, patterns::engine::Cvar_FindVar);
         auto fCbuf_InsertText = utils.FindAsync(ORIG_Cbuf_InsertText, patterns::engine::Cbuf_InsertText);
+
         auto pattern = fCbuf_AddText.get();
         auto pattern2 = fCmd_AddMallocCommand.get();
 
@@ -315,6 +345,42 @@ void SvenBXT::AddHWStuff() {
         else
             PrintDevWarning("[hw dll] Could not find svs.\n");
 
+        static constexpr auto p = PATTERN("FF E0 68 ?? ?? ?? ?? FF 35 ?? ?? ?? ?? E8 ?? ?? ?? ?? 83 C4 08 A3");
+        void* pClientFuncs = (void*)MemUtils::find_pattern(base, size, p);
+        g_pClientFuncs = *reinterpret_cast<cl_clientfunc_t**>((BYTE*)pClientFuncs + 0x16);
+
+        // g_pClientFuncs
+        ud_t instruction;
+
+        ud_init(&instruction);
+        ud_set_mode(&instruction, 32);
+        ud_set_input_buffer(&instruction, (const uint8_t*)((BYTE*)pClientFuncs + 0x15), 15); // 15 - longest x86 instruction
+
+        ud_disassemble(&instruction);
+
+        if (instruction.mnemonic == UD_Imov && instruction.operand[0].type == UD_OP_MEM && instruction.operand[1].type == UD_OP_REG && instruction.operand[1].base == UD_R_EAX)
+        {
+            g_pClientFuncs = reinterpret_cast<cl_clientfunc_t*>(instruction.operand[0].lval.udword);
+        }
+
+        if (g_pClientFuncs)
+        {
+            PrintDevMessage("[hw dll] Found ClientFuncs at %p.\n", g_pClientFuncs);
+
+            RegisterCVar(CVars::bxt_hud);
+            RegisterCVar(CVars::bxt_hud_speedometer);
+            RegisterCVar(CVars::bxt_hud_speedometer_offset);
+            RegisterCVar(CVars::bxt_hud_speedometer_anchor);
+
+            HUD_Init_Original = g_pClientFuncs->HUD_Init;
+            g_pClientFuncs->HUD_Init = HUD_Init_Hooked;
+
+            HUD_VidInit_Original = g_pClientFuncs->HUD_VidInit;
+            g_pClientFuncs->HUD_VidInit = HUD_VidInit_Hooked;
+
+            HUD_Redraw_Original = g_pClientFuncs->HUD_Redraw;
+            g_pClientFuncs->HUD_Redraw = HUD_Redraw_Hooked;
+        }
         /* COMMANDS START - STRUCTS */
 
         struct Cmd_BXT_Append
@@ -441,7 +507,7 @@ void SvenBXT::AddCLStuff() {
 
         /* HUD Functions hook - START */
 
-        ORIG_HUD_Init = (decltype(ORIG_HUD_Init))(MemUtils::GetSymbolAddress(handle, "HUD_Init"));
+/*        ORIG_HUD_Init = (decltype(ORIG_HUD_Init))(MemUtils::GetSymbolAddress(handle, "HUD_Init"));
         ORIG_HUD_VidInit = (decltype(ORIG_HUD_VidInit))(MemUtils::GetSymbolAddress(handle, "HUD_VidInit"));
         ORIG_HUD_Reset = (decltype(ORIG_HUD_Reset))(MemUtils::GetSymbolAddress(handle, "HUD_Reset"));
         ORIG_HUD_Redraw = (decltype(ORIG_HUD_Redraw))(MemUtils::GetSymbolAddress(handle, "HUD_Redraw"));
@@ -491,7 +557,7 @@ void SvenBXT::AddCLStuff() {
             PrintDevMessage("[client dll] Found HUD_Redraw at %p.\n", ORIG_HUD_Redraw);
         }
         else
-            PrintDevWarning("[client dll] Could not find HUD_Redraw.\n");
+            PrintDevWarning("[client dll] Could not find HUD_Redraw.\n");*/
         /* HUD Functions hook - END */
     }
     else {
