@@ -11,6 +11,7 @@
 cvar_t** cvar_vars;
 ptrdiff_t offEdict;
 cl_clientfunc_t* g_pClientFuncs = NULL;
+edict_t** sv_player = nullptr;
 struct client_t;
 struct svs_t
 {
@@ -98,10 +99,12 @@ void RegisterCVar(CVarWrapper& cvar)
 typedef void (*HUD_InitFn)(void);
 typedef int (*HUD_VidInitFn)(void);
 typedef int (*HUD_RedrawFn)(float, int);
+typedef void (*V_CalcRefdefFn)(struct ref_params_s*);
 
 HUD_VidInitFn HUD_VidInit_Original = NULL;
 HUD_InitFn HUD_Init_Original = NULL;
 HUD_RedrawFn HUD_Redraw_Original = NULL;
+V_CalcRefdefFn V_CalcRefdef_Original = NULL;
 
 void HUD_Init_Hooked(void)
 {
@@ -121,51 +124,11 @@ int HUD_Redraw_Hooked(float time, int intermission)
     return HUD_Redraw_Original(time, intermission);
 }
 
-/*typedef void(__cdecl* _HUD_Init)();
-_HUD_Init ORIG_HUD_Init;
-
-typedef void(__cdecl* _HUD_VidInit)();
-_HUD_VidInit ORIG_HUD_VidInit;
-
-typedef void(__cdecl* _HUD_Reset)();
-_HUD_Reset ORIG_HUD_Reset;
-
-typedef void(__cdecl* _HUD_Redraw)(float time, int intermission);
-_HUD_Redraw ORIG_HUD_Redraw;
-
-void __cdecl HOOKED_HUD_Init_Func() {
-    CustomHud::Init();
-    ORIG_HUD_Init();
+void V_CalcRefdef_Hooked(struct ref_params_s* pparams)
+{
+    CustomHud::V_CalcRefdef(pparams);
+    return V_CalcRefdef_Original(pparams);
 }
-
-void __cdecl HOOKED_HUD_Init() {
-    HOOKED_HUD_Init_Func();
-}
-
-void __cdecl HOOKED_HUD_VidInit_Func() {
-    CustomHud::VidInit();
-}
-
-void __cdecl HOOKED_HUD_VidInit() {
-    HOOKED_HUD_VidInit_Func();
-}
-
-void __cdecl HOOKED_HUD_Reset_Func() {
-    CustomHud::InitIfNecessary();
-    CustomHud::VidInit();
-}
-
-void __cdecl HOOKED_HUD_Reset() {
-    HOOKED_HUD_Reset_Func();
-}
-
-void __cdecl HOOKED_HUD_Redraw_Func(float time, int intermission) {
-    CustomHud::Draw();
-}
-
-void __cdecl HOOKED_HUD_Redraw(float time, int intermission) {
-    HOOKED_HUD_Redraw_Func(time, intermission);
-}*/
 
 /* CLIENT - END */
 
@@ -380,7 +343,11 @@ void SvenBXT::AddHWStuff() {
 
             HUD_Redraw_Original = g_pClientFuncs->HUD_Redraw;
             g_pClientFuncs->HUD_Redraw = HUD_Redraw_Hooked;
+
+            V_CalcRefdef_Original = g_pClientFuncs->V_CalcRefdef;
+            g_pClientFuncs->V_CalcRefdef = V_CalcRefdef_Hooked;
         }
+
         /* COMMANDS START - STRUCTS */
 
         struct Cmd_BXT_Append
@@ -418,23 +385,6 @@ void SvenBXT::AddHWStuff() {
         PrintWarning("[hw dll] Could not get module info of hw.dll.\n");
     }
 }
-
-bool TryGettingAccurateInfo(float origin[3], float velocity[3])
-{
-    if (!svs || svs->num_clients < 1)
-        return false;
-
-    edict_t* pl = *reinterpret_cast<edict_t**>(reinterpret_cast<uintptr_t>(svs->clients) + offEdict);
-    origin[0] = pl->v.origin[0];
-    origin[1] = pl->v.origin[1];
-    origin[2] = pl->v.origin[2];
-    velocity[0] = pl->v.velocity[0];
-    velocity[1] = pl->v.velocity[1];
-    velocity[2] = pl->v.velocity[2];
-    return true;
-}
-
-
 
 void SvenBXT::AddCLStuff() {
     void* handle;
@@ -504,61 +454,6 @@ void SvenBXT::AddCLStuff() {
             }
         }
         /* gEngfuncs hook - END */
-
-        /* HUD Functions hook - START */
-
-/*        ORIG_HUD_Init = (decltype(ORIG_HUD_Init))(MemUtils::GetSymbolAddress(handle, "HUD_Init"));
-        ORIG_HUD_VidInit = (decltype(ORIG_HUD_VidInit))(MemUtils::GetSymbolAddress(handle, "HUD_VidInit"));
-        ORIG_HUD_Reset = (decltype(ORIG_HUD_Reset))(MemUtils::GetSymbolAddress(handle, "HUD_Reset"));
-        ORIG_HUD_Redraw = (decltype(ORIG_HUD_Redraw))(MemUtils::GetSymbolAddress(handle, "HUD_Redraw"));
-
-        MemUtils::AddSymbolLookupHook(handle, reinterpret_cast<void*>(ORIG_HUD_Init), reinterpret_cast<void*>(HOOKED_HUD_Init));
-        MemUtils::AddSymbolLookupHook(handle, reinterpret_cast<void*>(ORIG_HUD_VidInit), reinterpret_cast<void*>(HOOKED_HUD_VidInit));
-        MemUtils::AddSymbolLookupHook(handle, reinterpret_cast<void*>(ORIG_HUD_Reset), reinterpret_cast<void*>(HOOKED_HUD_Reset));
-        MemUtils::AddSymbolLookupHook(handle, reinterpret_cast<void*>(ORIG_HUD_Redraw), reinterpret_cast<void*>(HOOKED_HUD_Redraw));
-        MemUtils::Intercept(moduleName,
-            ORIG_HUD_Init, HOOKED_HUD_Init,
-            ORIG_HUD_VidInit, HOOKED_HUD_VidInit,
-            ORIG_HUD_Reset, HOOKED_HUD_Reset,
-            ORIG_HUD_Redraw, HOOKED_HUD_Redraw);
-
-        if (ORIG_HUD_Init)
-        {
-            PrintDevMessage("[client dll] Found HUD_Init at %p.\n", ORIG_HUD_Init);
-            RegisterCVar(CVars::bxt_hud);
-            RegisterCVar(CVars::bxt_hud_speedometer);
-            RegisterCVar(CVars::bxt_hud_speedometer_offset);
-            RegisterCVar(CVars::bxt_hud_speedometer_anchor);
-
-            HOOKED_HUD_Init();
-        }
-        else
-            PrintDevWarning("[client dll] Could not find HUD_Init.\n");
-
-        if (ORIG_HUD_VidInit)
-        {
-            PrintDevMessage("[client dll] Found HUD_VidInit at %p.\n", ORIG_HUD_VidInit);
-            HOOKED_HUD_VidInit();
-        }
-        else
-            PrintDevWarning("[client dll] Could not find HUD_VidInit.\n");
-
-        if (ORIG_HUD_Reset)
-        {
-            PrintDevMessage("[client dll] Found HUD_Reset at %p.\n", ORIG_HUD_Reset);
-            HOOKED_HUD_Reset();
-        }
-        else
-            PrintDevWarning("[client dll] Could not find HUD_Reset.\n");
-
-        if (ORIG_HUD_Redraw)
-        {
-            HOOKED_HUD_Redraw(NULL, NULL);
-            PrintDevMessage("[client dll] Found HUD_Redraw at %p.\n", ORIG_HUD_Redraw);
-        }
-        else
-            PrintDevWarning("[client dll] Could not find HUD_Redraw.\n");*/
-        /* HUD Functions hook - END */
     }
     else {
         printf("[client dll] Could not get module info of client.dll.\n");

@@ -34,6 +34,13 @@ namespace CustomHud
 		return si;
 	}
 
+	template<typename T, size_t size = 3>
+	static inline void vecCopy(const T src[], T dest[])
+	{
+		for (size_t i = 0; i < size; ++i)
+			dest[i] = src[i];
+	}
+
 	static inline double sqr(double a)
 	{
 		return a * a;
@@ -246,6 +253,11 @@ namespace CustomHud
 		if (y) *y = ry;
 	}
 
+	void UpdatePlayerInfo(float vel[3], float org[3], float viewangles[3]) {
+		vecCopy(vel, player.velocity);
+		vecCopy(org, player.origin);
+		vecCopy(viewangles, player.viewangles);
+	}
 
 	static void DrawSpeedometer()
 	{
@@ -331,5 +343,10 @@ namespace CustomHud
 			return;
 		
 		DrawSpeedometer();
+	}
+
+	void V_CalcRefdef(struct ref_params_s* pparams)
+	{
+		UpdatePlayerInfo(pparams->simvel, pparams->simorg, pparams->cl_viewangles);
 	}
 }
