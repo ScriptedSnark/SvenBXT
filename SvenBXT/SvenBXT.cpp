@@ -331,6 +331,7 @@ void SvenBXT::AddHWStuff() {
             PrintDevMessage("[hw dll] Found ClientFuncs at %p.\n", g_pClientFuncs);
 
             RegisterCVar(CVars::bxt_hud);
+            RegisterCVar(CVars::bxt_hud_color);
             RegisterCVar(CVars::bxt_hud_speedometer);
             RegisterCVar(CVars::bxt_hud_speedometer_offset);
             RegisterCVar(CVars::bxt_hud_speedometer_anchor);

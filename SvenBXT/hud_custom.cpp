@@ -16,6 +16,7 @@ namespace CustomHud
 	static client_sprite_t* SpriteList;
 	static SCREENINFO si;
 	static playerinfo player;
+	static int hudColor[3];
 	static int SpriteCount;
 	static std::array<HSPRITE_HL, 10> NumberSprites;
 	static std::array<wrect_t, 10> NumberSpriteRects;
@@ -227,7 +228,25 @@ namespace CustomHud
 
 	static inline int DrawNumber(int number, int x, int y, int fieldMinWidth = 1)
 	{
-		return DrawNumber(number, x, y, 255, 160, 0, fieldMinWidth); // TODO: customize BXT hud color
+		return DrawNumber(number, x, y, hudColor[0], hudColor[1], hudColor[2], fieldMinWidth); // TODO: customize BXT hud color
+	}
+
+	static void UpdateColors()
+	{
+		// Default Sven Co-op HUD color
+		hudColor[0] = 100;
+		hudColor[1] = 130;
+		hudColor[2] = 200;
+
+		if (!CVars::bxt_hud_color.IsEmpty())
+		{
+			auto colorStr = CVars::bxt_hud_color.GetString();
+			if (colorStr != "auto")
+			{
+				std::istringstream color_ss(colorStr);
+				color_ss >> hudColor[0] >> hudColor[1] >> hudColor[2];
+			}
+		}
 	}
 
 	static void GetPosition(const CVarWrapper& Offset, const CVarWrapper& Anchor, int* x, int* y, int rx = 0, int ry = 0)
@@ -341,7 +360,8 @@ namespace CustomHud
 	{
 		if (!CVars::bxt_hud.GetBool())
 			return;
-		
+
+		UpdateColors();
 		DrawSpeedometer();
 	}
 
