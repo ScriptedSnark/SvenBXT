@@ -344,6 +344,9 @@ void SvenBXT::AddHWStuff() {
             RegisterCVar(CVars::bxt_hud_viewangles);
             RegisterCVar(CVars::bxt_hud_viewangles_offset);
             RegisterCVar(CVars::bxt_hud_viewangles_anchor);
+            RegisterCVar(CVars::bxt_hud_origin);
+            RegisterCVar(CVars::bxt_hud_origin_offset);
+            RegisterCVar(CVars::bxt_hud_origin_anchor);
 
             HUD_Init_Original = g_pClientFuncs->HUD_Init;
             g_pClientFuncs->HUD_Init = HUD_Init_Hooked;

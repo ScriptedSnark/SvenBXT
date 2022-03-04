@@ -362,6 +362,29 @@ namespace CustomHud
 		vecCopy(viewangles, player.viewangles);
 	}
 
+	static void DrawOrigin(float flTime)
+	{
+		if (CVars::bxt_hud_origin.GetBool())
+		{
+			int x, y;
+			GetPosition(CVars::bxt_hud_origin_offset, CVars::bxt_hud_origin_anchor, &x, &y, -200, (si.iCharHeight * 6) + 1);
+
+			DrawString(x, y, "Origin:");
+
+			y += si.iCharHeight;
+
+			std::ostringstream out;
+			out.setf(std::ios::fixed);
+			out.precision(precision);
+
+			out << "X: " << player.origin[0] << "\n"
+				<< "Y: " << player.origin[1] << "\n"
+				<< "Z: " << player.origin[2];
+
+			DrawMultilineString(x, y, out.str());
+		}
+	}
+
 	void DrawViewangles(float flTime)
 	{
 		if (CVars::bxt_hud_viewangles.GetBool())
@@ -532,6 +555,7 @@ namespace CustomHud
 		DrawSpeedometer();
 		DrawViewangles(flTime);
 		DrawJumpspeed(flTime);
+		DrawOrigin(flTime);
 	}
 
 	void V_CalcRefdef(struct ref_params_s* pparams)

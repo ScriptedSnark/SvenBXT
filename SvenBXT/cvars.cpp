@@ -17,6 +17,9 @@ namespace CVars
 	CVarWrapper bxt_hud_viewangles("bxt_hud_viewangles", "0");
 	CVarWrapper bxt_hud_viewangles_offset("bxt_hud_viewangles_offset", "");
 	CVarWrapper bxt_hud_viewangles_anchor("bxt_hud_viewangles_anchor", "1 0");
+	CVarWrapper bxt_hud_origin("bxt_hud_origin", "0");
+	CVarWrapper bxt_hud_origin_offset("bxt_hud_origin_offset", "");
+	CVarWrapper bxt_hud_origin_anchor("bxt_hud_origin_anchor", "1 0");
 
 	const std::vector<CVarWrapper*> allCVars =
 	{
@@ -32,6 +35,9 @@ namespace CVars
 		&bxt_hud_jumpspeed_anchor,
 		&bxt_hud_viewangles,
 		&bxt_hud_viewangles_offset,
-		&bxt_hud_viewangles_anchor
+		&bxt_hud_viewangles_anchor,
+		&bxt_hud_origin,
+		&bxt_hud_origin_offset,
+		&bxt_hud_origin_anchor
 	};
 }
