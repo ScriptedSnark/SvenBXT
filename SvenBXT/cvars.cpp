@@ -8,7 +8,7 @@ namespace CVars
 	CVarWrapper bxt_hud("bxt_hud", "1");
 	CVarWrapper bxt_hud_color("bxt_hud_color", "100 130 200");
 	CVarWrapper bxt_hud_precision("bxt_hud_precision", "6");
-	CVarWrapper bxt_hud_speedometer("bxt_hud_speedometer", "0");
+	CVarWrapper bxt_hud_speedometer("bxt_hud_speedometer", "1");
 	CVarWrapper bxt_hud_speedometer_offset("bxt_hud_speedometer_offset", "");
 	CVarWrapper bxt_hud_speedometer_anchor("bxt_hud_speedometer_anchor", "0.5 1");
 	CVarWrapper bxt_hud_jumpspeed("bxt_hud_jumpspeed", "0");
