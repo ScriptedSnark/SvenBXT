@@ -120,7 +120,7 @@ int HUD_VidInit_Hooked(void)
 
 int HUD_Redraw_Hooked(float time, int intermission)
 {
-    CustomHud::Draw();
+    CustomHud::Draw(time);
     return HUD_Redraw_Original(time, intermission);
 }
 
@@ -330,11 +330,20 @@ void SvenBXT::AddHWStuff() {
         {
             PrintDevMessage("[hw dll] Found ClientFuncs at %p.\n", g_pClientFuncs);
 
+            CVars::con_color.Assign(ORIG_Cvar_FindVar("con_color"));
+
             RegisterCVar(CVars::bxt_hud);
             RegisterCVar(CVars::bxt_hud_color);
+            RegisterCVar(CVars::bxt_hud_precision);
             RegisterCVar(CVars::bxt_hud_speedometer);
             RegisterCVar(CVars::bxt_hud_speedometer_offset);
             RegisterCVar(CVars::bxt_hud_speedometer_anchor);
+            RegisterCVar(CVars::bxt_hud_jumpspeed);
+            RegisterCVar(CVars::bxt_hud_jumpspeed_anchor);
+            RegisterCVar(CVars::bxt_hud_jumpspeed_offset);
+            RegisterCVar(CVars::bxt_hud_viewangles);
+            RegisterCVar(CVars::bxt_hud_viewangles_offset);
+            RegisterCVar(CVars::bxt_hud_viewangles_anchor);
 
             HUD_Init_Original = g_pClientFuncs->HUD_Init;
             g_pClientFuncs->HUD_Init = HUD_Init_Hooked;

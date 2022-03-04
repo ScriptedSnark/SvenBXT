@@ -15,7 +15,7 @@ namespace CustomHud
 	void Init();
 	void InitIfNecessary();
 	void VidInit();
-	void Draw();
+	void Draw(float flTime);
 	void V_CalcRefdef(struct ref_params_s* pparams);
 	const SCREENINFO& GetScreenInfo();
 }

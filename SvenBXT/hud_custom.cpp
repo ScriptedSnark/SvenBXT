@@ -12,10 +12,13 @@
 
 namespace CustomHud
 {
+	static const float FADE_DURATION_JUMPSPEED = 0.7f;
 	static bool initialized = false;
 	static client_sprite_t* SpriteList;
 	static SCREENINFO si;
+	static int precision;
 	static playerinfo player;
+	static float consoleColor[3];
 	static int hudColor[3];
 	static int SpriteCount;
 	static std::array<HSPRITE_HL, 10> NumberSprites;
@@ -63,6 +66,59 @@ namespace CustomHud
 				pEngfuncs->pfnFillRGBA(x + j, y + i, 1, 1, r, g, b, bitmap[i * width + j]);
 
 		return width;
+	}
+
+	static int DrawString(int x, int y, const char* s, float r, float g, float b)
+	{
+		pEngfuncs->pfnDrawSetTextColor(r, g, b);
+		return pEngfuncs->pfnDrawConsoleString(x, y, const_cast<char*>(s));
+	}
+
+	static inline int DrawString(int x, int y, const char* s)
+	{
+		return DrawString(x, y, s, consoleColor[0], consoleColor[1], consoleColor[2]);
+	}
+
+	static int DrawMultilineString(int x, int y, std::string s, float r, float g, float b)
+	{
+		int max_new_x = 0;
+
+		while (s.size() > 0)
+		{
+			auto pos = s.find('\n');
+
+			int new_x = DrawString(x, y, const_cast<char*>(s.substr(0, pos).c_str()), r, g, b);
+			max_new_x = max(new_x, max_new_x);
+			y += si.iCharHeight;
+
+			if (pos != std::string::npos)
+				s = s.substr(pos + 1, std::string::npos);
+			else
+				s.erase();
+		};
+
+		return max_new_x;
+	}
+
+	static int DrawMultilineString(int x, int y, std::string s)
+	{
+		int max_new_x = 0;
+
+		while (s.size() > 0)
+		{
+			auto pos = s.find('\n');
+
+			int new_x = DrawString(x, y, const_cast<char*>(s.substr(0, pos).c_str()));
+			max_new_x = max(new_x, max_new_x);
+			y += si.iCharHeight;
+
+			if (pos != std::string::npos)
+				s = s.substr(pos + 1, std::string::npos);
+			else
+				s.erase();
+		};
+
+		return max_new_x;
 	}
 
 	static void DrawDigit(int digit, int x, int y, int r, int g, int b)
@@ -233,6 +289,22 @@ namespace CustomHud
 
 	static void UpdateColors()
 	{
+		// Default: taken from con_color of HL 6153.
+		consoleColor[0] = 1.0f;
+		consoleColor[1] = 180 / 255.0f;
+		consoleColor[2] = 30 / 255.0f;
+
+		if (!CVars::con_color.IsEmpty())
+		{
+			unsigned r = 0, g = 0, b = 0;
+			std::istringstream ss(CVars::con_color.GetString());
+			ss >> r >> g >> b;
+
+			consoleColor[0] = r / 255.0f;
+			consoleColor[1] = g / 255.0f;
+			consoleColor[2] = b / 255.0f;
+		}
+
 		// Default Sven Co-op HUD color
 		hudColor[0] = 100;
 		hudColor[1] = 130;
@@ -272,10 +344,37 @@ namespace CustomHud
 		if (y) *y = ry;
 	}
 
+	static void UpdatePrecision()
+	{
+		if (!CVars::bxt_hud_precision.IsEmpty())
+		{
+			precision = CVars::bxt_hud_precision.GetInt();
+			if (precision > 16)
+				precision = 16;
+		}
+		else
+			precision = 6;
+	}
+
 	void UpdatePlayerInfo(float vel[3], float org[3], float viewangles[3]) {
 		vecCopy(vel, player.velocity);
 		vecCopy(org, player.origin);
 		vecCopy(viewangles, player.viewangles);
+	}
+
+	void DrawViewangles(float flTime)
+	{
+		if (CVars::bxt_hud_viewangles.GetBool())
+		{
+			int x, y;
+			GetPosition(CVars::bxt_hud_viewangles_offset, CVars::bxt_hud_viewangles_anchor, &x, &y, -200, (si.iCharHeight * 10) + 2);
+
+			char* out;
+
+			sprintf(out, "Pitch: %.6f\nYaw: %.6f", player.viewangles[0], player.viewangles[1]);
+
+			DrawMultilineString(x, y, out);
+		}
 	}
 
 	static void DrawSpeedometer()
@@ -287,6 +386,74 @@ namespace CustomHud
 			//DrawNumber(143, x, y); - JUST TEST
 			DrawNumber(static_cast<int>(trunc(length(player.velocity[0], player.velocity[1]))), x, y);
 		}
+	}
+
+	static void DrawJumpspeed(float flTime)
+	{
+		static float prevVel[3] = { 0.0f, 0.0f, 0.0f };
+
+		if (CVars::bxt_hud_jumpspeed.GetBool())
+		{
+			static float lastTime = flTime;
+			static double passedTime = FADE_DURATION_JUMPSPEED;
+			static int fadingFrom[3] = { hudColor[0], hudColor[1], hudColor[2] };
+			static double jumpSpeed = 0.0;
+
+			int r = hudColor[0],
+				g = hudColor[1],
+				b = hudColor[2];
+
+			if (FADE_DURATION_JUMPSPEED > 0.0f)
+			{
+				if ((player.velocity[2] != 0.0f && prevVel[2] == 0.0f)
+					|| (player.velocity[2] > 0.0f && prevVel[2] < 0.0f))
+				{
+					double difference = length(player.velocity[0], player.velocity[1]) - jumpSpeed;
+					if (difference != 0.0f)
+					{
+						if (difference > 0.0f)
+						{
+							fadingFrom[0] = 0;
+							fadingFrom[1] = 255;
+							fadingFrom[2] = 0;
+						}
+						else
+						{
+							fadingFrom[0] = 255;
+							fadingFrom[1] = 0;
+							fadingFrom[2] = 0;
+						}
+
+						passedTime = 0.0;
+						jumpSpeed = length(player.velocity[0], player.velocity[1]);
+					}
+				}
+
+				// Can be negative if we went back in time (for example, loaded a save).
+				double timeDelta = max(flTime - lastTime, 0.0f);
+				passedTime += timeDelta;
+
+				// Check for Inf, NaN, etc.
+				if (passedTime > FADE_DURATION_JUMPSPEED || !std::isnormal(passedTime)) {
+					passedTime = FADE_DURATION_JUMPSPEED;
+				}
+
+				float colorVel[3] = { hudColor[0] - fadingFrom[0] / FADE_DURATION_JUMPSPEED,
+									  hudColor[1] - fadingFrom[1] / FADE_DURATION_JUMPSPEED,
+									  hudColor[2] - fadingFrom[2] / FADE_DURATION_JUMPSPEED };
+				r = static_cast<int>(hudColor[0] - colorVel[0] * (FADE_DURATION_JUMPSPEED - passedTime));
+				g = static_cast<int>(hudColor[1] - colorVel[1] * (FADE_DURATION_JUMPSPEED - passedTime));
+				b = static_cast<int>(hudColor[2] - colorVel[2] * (FADE_DURATION_JUMPSPEED - passedTime));
+
+				lastTime = flTime;
+			}
+
+			int x, y;
+			GetPosition(CVars::bxt_hud_jumpspeed_offset, CVars::bxt_hud_jumpspeed_anchor, &x, &y, 0, -3 * NumberHeight);
+			DrawNumber(static_cast<int>(trunc(jumpSpeed)), x, y, r, g, b);
+		}
+
+		vecCopy(player.velocity, prevVel);
 	}
 
 	void Init()
@@ -356,13 +523,15 @@ namespace CustomHud
 		}
 	}
 
-	void Draw()
+	void Draw(float flTime)
 	{
 		if (!CVars::bxt_hud.GetBool())
 			return;
 
 		UpdateColors();
 		DrawSpeedometer();
+		DrawViewangles(flTime);
+		DrawJumpspeed(flTime);
 	}
 
 	void V_CalcRefdef(struct ref_params_s* pparams)

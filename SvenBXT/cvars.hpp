@@ -117,10 +117,19 @@ inline void CVarWrapper::Set(const char* string)
 namespace CVars
 {
 	// Engine CVars
+	extern CVarWrapper con_color;
 	extern CVarWrapper bxt_hud;
 	extern CVarWrapper bxt_hud_color;
+	extern CVarWrapper bxt_hud_precision;
 	extern CVarWrapper bxt_hud_speedometer;
 	extern CVarWrapper bxt_hud_speedometer_offset;
 	extern CVarWrapper bxt_hud_speedometer_anchor;
+	extern CVarWrapper bxt_hud_jumpspeed;
+	extern CVarWrapper bxt_hud_jumpspeed_offset;
+	extern CVarWrapper bxt_hud_jumpspeed_anchor;
+	extern CVarWrapper bxt_hud_viewangles;
+	extern CVarWrapper bxt_hud_viewangles_offset;
+	extern CVarWrapper bxt_hud_viewangles_anchor;
+
 	extern const std::vector<CVarWrapper*> allCVars;
 }
