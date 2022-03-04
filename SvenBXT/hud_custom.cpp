@@ -541,7 +541,7 @@ namespace CustomHud
 				path += ".spr";
 				NumberSprites[i] = pEngfuncs->pfnSPR_Load(path.c_str());
 
-				PrintDevMessage("[client dll] Reloaded the digit %d sprite from \"%s\".\n", i, path.c_str());
+				// PrintDevMessage("[client dll] Reloaded the digit %d sprite from \"%s\".\n", i, path.c_str());
 			}
 		}
 	}
