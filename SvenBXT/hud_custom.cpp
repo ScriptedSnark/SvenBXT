@@ -385,18 +385,38 @@ namespace CustomHud
 		}
 	}
 
+	float AngleNormalize(float angle)
+	{
+		angle = fmodf(angle, 360.0f);
+		if (angle > 180)
+		{
+			angle -= 360;
+		}
+		if (angle < -180)
+		{
+			angle += 360;
+		}
+		return angle;
+	}
+
 	void DrawViewangles(float flTime)
 	{
 		if (CVars::bxt_hud_viewangles.GetBool())
 		{
 			int x, y;
+			float viewangle[2];
+			viewangle[0] = AngleNormalize(player.viewangles[0]);
+			viewangle[1] = AngleNormalize(player.viewangles[1]);
+
 			GetPosition(CVars::bxt_hud_viewangles_offset, CVars::bxt_hud_viewangles_anchor, &x, &y, -200, (si.iCharHeight * 10) + 2);
 
-			char* out;
+			std::ostringstream out;
+			out.setf(std::ios::fixed);
+			out.precision(precision);
+			out << "Pitch: " << viewangle[0] << "\n"
+				<< "Yaw: " << viewangle[1];
 
-			sprintf(out, "Pitch: %.6f\nYaw: %.6f", player.viewangles[0], player.viewangles[1]);
-
-			DrawMultilineString(x, y, out);
+			DrawMultilineString(x, y, out.str());
 		}
 	}
 
@@ -552,6 +572,8 @@ namespace CustomHud
 			return;
 
 		UpdateColors();
+		UpdatePrecision();
+
 		DrawSpeedometer();
 		DrawViewangles(flTime);
 		DrawJumpspeed(flTime);
