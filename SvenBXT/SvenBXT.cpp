@@ -332,6 +332,21 @@ void SvenBXT::AddHWStuff() {
 
             CVars::con_color.Assign(ORIG_Cvar_FindVar("con_color"));
 
+            RegisterCVar(CVars::bxt_cross);
+            RegisterCVar(CVars::bxt_cross_color);
+            RegisterCVar(CVars::bxt_cross_alpha);
+            RegisterCVar(CVars::bxt_cross_thickness);
+            RegisterCVar(CVars::bxt_cross_size);
+            RegisterCVar(CVars::bxt_cross_gap);
+            RegisterCVar(CVars::bxt_cross_outline);
+            RegisterCVar(CVars::bxt_cross_circle_radius);
+            RegisterCVar(CVars::bxt_cross_dot_color);
+            RegisterCVar(CVars::bxt_cross_dot_size);
+            RegisterCVar(CVars::bxt_cross_top_line);
+            RegisterCVar(CVars::bxt_cross_bottom_line);
+            RegisterCVar(CVars::bxt_cross_left_line);
+            RegisterCVar(CVars::bxt_cross_right_line);
+
             RegisterCVar(CVars::bxt_hud);
             RegisterCVar(CVars::bxt_hud_color);
             RegisterCVar(CVars::bxt_hud_precision);
@@ -369,8 +384,10 @@ void SvenBXT::AddHWStuff() {
 
             static void handler(const char* command)
             {
+                /*
                 ORIG_Cbuf_AddText(command);
                 ORIG_Cbuf_AddText("\n");
+                */
             }
         };
 
@@ -391,7 +408,7 @@ void SvenBXT::AddHWStuff() {
 
         wrapper::Add<Cmd_BXT_Append, Handler<const char*>>("bxt_append");
         wrapper::Add<Cmd_BXT_Version, Handler<const char*>>("bxt_version");
-        Cmd_AddMallocCommand("w", Cmd_Multiwait_f, 2);
+        //Cmd_AddMallocCommand("w", Cmd_Multiwait_f, 2);
 
         /* COMMANDS END */
     } else {

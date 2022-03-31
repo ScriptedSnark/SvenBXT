@@ -118,6 +118,20 @@ namespace CVars
 {
 	// Engine CVars
 	extern CVarWrapper con_color;
+	extern CVarWrapper bxt_cross;
+	extern CVarWrapper bxt_cross_color;
+	extern CVarWrapper bxt_cross_alpha;
+	extern CVarWrapper bxt_cross_thickness;
+	extern CVarWrapper bxt_cross_size;
+	extern CVarWrapper bxt_cross_gap;
+	extern CVarWrapper bxt_cross_outline;
+	extern CVarWrapper bxt_cross_circle_radius;
+	extern CVarWrapper bxt_cross_dot_color;
+	extern CVarWrapper bxt_cross_dot_size;
+	extern CVarWrapper bxt_cross_top_line;
+	extern CVarWrapper bxt_cross_bottom_line;
+	extern CVarWrapper bxt_cross_left_line;
+	extern CVarWrapper bxt_cross_right_line;
 	extern CVarWrapper bxt_hud;
 	extern CVarWrapper bxt_hud_color;
 	extern CVarWrapper bxt_hud_precision;

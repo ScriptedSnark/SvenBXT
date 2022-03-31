@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef M_PI
+const double M_PI = 3.14159265358979323846;
+#endif
+
 /* CVAR FLAGS - START */
 #define FCVAR_ARCHIVE        (1<<0)    // set to cause it to be saved to vars.rc
 #define FCVAR_USERINFO        (1<<1)    // changes the client's info string

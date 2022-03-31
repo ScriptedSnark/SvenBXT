@@ -30,6 +30,7 @@
     <ClCompile Include="udis86\src\udis86.c">
       <Filter>udis86</Filter>
     </ClCompile>
+    <ClCompile Include="opengl_utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="conutils.hpp" />
@@ -54,6 +55,8 @@
     <ClInclude Include="patterns_macros.hpp" />
     <ClInclude Include="ptrns.hpp" />
     <ClInclude Include="Utils.hpp" />
+    <ClInclude Include="sven_sdk.h" />
+    <ClInclude Include="opengl_utils.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="udis86">
