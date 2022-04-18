@@ -9,4 +9,6 @@
 
 SvenBXT is a remake of BunnymodXT for Sven Co-op 5.22+ versions (only 5.25 now).
 
+You can legally use this tool for [Sven Co-op runs](https://www.speedrun.com/sven_coop).
+
 Currently WIP.
