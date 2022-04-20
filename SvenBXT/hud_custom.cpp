@@ -238,8 +238,31 @@ namespace CustomHud
 		DrawBitmap(x, y, line_right, linesprite_width, linesprite_height, r, g, b);
 	}
 
-	static int DrawNumber(int number, int x, int y, int r, int g, int b, int fieldMinWidth = 1)
+	static void AlignNumber(int alignment, int &x, int &y, int numberWidth, int numberHeight)
 	{
+		// Align to right
+		if ( alignment & (1 << 0) )
+			x -= numberWidth;
+
+		// Align to center
+		if ( alignment & (1 << 1) )
+			x -= numberWidth / 2;
+
+	/*
+		// Align to left bottom
+		if ( alignment & (1 << 2) )
+			y += numberHeight / 2;
+
+		// Align to left top
+		if ( alignment & (1 << 3) )
+			y -= numberHeight / 2;
+	*/
+	}
+
+	static int DrawNumber(int number, int x, int y, int r, int g, int b, int alignment, int fieldMinWidth = 1)
+	{
+		bool bNegative = false;
+
 		if (number < 0)
 		{
 			if (number == -2147483648)
@@ -249,13 +272,14 @@ namespace CustomHud
 			else
 			{
 				number = abs(number);
-				DrawLine(x - NumberWidth, y + NumberHeight / 2, NumberWidth, r, g, b);
+				bNegative = true;
 			}
 		}
 
 		static_assert(sizeof(int) >= 4, "Int less than 4 bytes in size is not supported.");
 
 		int digits[10] = { 0 };
+		int c = 0;
 		int i;
 		for (i = 0; i < 10; ++i)
 		{
@@ -264,6 +288,15 @@ namespace CustomHud
 
 			digits[i] = number % 10;
 			number /= 10;
+
+			c++;
+		}
+
+		AlignNumber(alignment, x, y, (fieldMinWidth >= c ? fieldMinWidth : c) * NumberWidth, NumberHeight);
+
+		if ( bNegative )
+		{
+			DrawLine(x - NumberWidth, y + NumberHeight / 2, NumberWidth, r, g, b);
 		}
 
 		for (; fieldMinWidth > 10; --fieldMinWidth)
@@ -283,9 +316,9 @@ namespace CustomHud
 		return x;
 	}
 
-	static inline int DrawNumber(int number, int x, int y, int fieldMinWidth = 1)
+	static inline int DrawNumber(int number, int x, int y, int alignment, int fieldMinWidth = 1)
 	{
-		return DrawNumber(number, x, y, hudColor[0], hudColor[1], hudColor[2], fieldMinWidth); // TODO: customize BXT hud color
+		return DrawNumber(number, x, y, hudColor[0], hudColor[1], hudColor[2], alignment, fieldMinWidth); // TODO: customize BXT hud color
 	}
 
 	static void UpdateColors()
@@ -427,8 +460,8 @@ namespace CustomHud
 		{
 			int x, y;
 			GetPosition(CVars::bxt_hud_speedometer_offset, CVars::bxt_hud_speedometer_anchor, &x, &y, 0, -2 * NumberHeight);
-			//DrawNumber(143, x, y); - JUST TEST
-			DrawNumber(static_cast<int>(trunc(length(player.velocity[0], player.velocity[1]))), x, y);
+			//DrawNumber(143, (1 << 1), x, y); - JUST TEST
+			DrawNumber(static_cast<int>(trunc(length(player.velocity[0], player.velocity[1]))), x, y, (1 << 1));
 		}
 	}
 
@@ -494,7 +527,7 @@ namespace CustomHud
 
 			int x, y;
 			GetPosition(CVars::bxt_hud_jumpspeed_offset, CVars::bxt_hud_jumpspeed_anchor, &x, &y, 0, -3 * NumberHeight);
-			DrawNumber(static_cast<int>(trunc(jumpSpeed)), x, y, r, g, b);
+			DrawNumber(static_cast<int>(trunc(jumpSpeed)), x, y, r, g, b, (1 << 1));
 		}
 
 		vecCopy(player.velocity, prevVel);
