@@ -27,6 +27,8 @@ namespace CustomHud
 	static std::array<client_sprite_t*, 10> NumberSpritePointers;
 	static int NumberWidth;
 	static int NumberHeight;
+	unsigned char custom_r, custom_g, custom_b;
+	bool custom_hud_color_set = false;
 
 	static void UpdateScreenInfo()
 	{
@@ -641,6 +643,18 @@ namespace CustomHud
 		}
 	}
 
+	void ScaleColors(int* r, int* g, int* b, int a)
+	{
+		if (custom_hud_color_set) {
+			*r = custom_r;
+			*g = custom_g;
+			*b = custom_b;
+		}
+
+		if (CVars::bxt_hud_game_alpha.GetInt() >= 1 && CVars::bxt_hud_game_alpha.GetInt() <= 255)
+			a = CVars::bxt_hud_game_alpha.GetInt(); // unused due to hud_alpha_default/_max in Sven Co-op
+	}
+
 	void Init()
 	{
 		SpriteList = nullptr;
@@ -712,6 +726,11 @@ namespace CustomHud
 	{
 		if (!CVars::bxt_hud.GetBool())
 			return;
+
+		custom_hud_color_set = false;
+
+		if (sscanf(CVars::bxt_hud_game_color.GetString().c_str(), "%hhu %hhu %hhu", &custom_r, &custom_g, &custom_b) == 3)
+			custom_hud_color_set = true;
 
 		UpdateColors();
 		UpdatePrecision();

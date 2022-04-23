@@ -35,6 +35,8 @@ namespace CVars
 	CVarWrapper bxt_hud_origin("bxt_hud_origin", "0");
 	CVarWrapper bxt_hud_origin_offset("bxt_hud_origin_offset", "");
 	CVarWrapper bxt_hud_origin_anchor("bxt_hud_origin_anchor", "1 0");
+	CVarWrapper bxt_hud_game_color("bxt_hud_game_color", "");
+	CVarWrapper bxt_hud_game_alpha("bxt_hud_game_alpha", "0");
 
 	const std::vector<CVarWrapper*> allCVars =
 	{
@@ -67,6 +69,8 @@ namespace CVars
 		&bxt_hud_viewangles_anchor,
 		&bxt_hud_origin,
 		&bxt_hud_origin_offset,
-		&bxt_hud_origin_anchor
+		&bxt_hud_origin_anchor,
+		&bxt_hud_game_color,
+		&bxt_hud_game_alpha
 	};
 }

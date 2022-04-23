@@ -67,6 +67,21 @@ namespace patterns {
 			"83 EC 14 53 56 57 8B 7C 24"
 		);
 	}
+	namespace client
+	{
+		PATTERNS(ScaleColors,
+			"HL-SteamPipe",
+			"DB 44 24 ?? 56 8B 74 24 ?? D8 0D",
+			"Echoes",
+			"55 8B EC 51 DB 45",
+			"AoMDC",
+			"55 8B EC 83 EC 44 53 56 57 DB 45",
+			"Halfquake-Trilogy",
+			"55 8B EC 66 0F 6E 4D",
+			"Sven-8832",
+			"66 0F 6E 4C 24 ?? 8B 4C 24"
+		);
+	}
 	namespace shared
 	{
 		PATTERNS(PM_Jump,

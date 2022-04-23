@@ -147,6 +147,8 @@ namespace CVars
 	extern CVarWrapper bxt_hud_origin;
 	extern CVarWrapper bxt_hud_origin_offset;
 	extern CVarWrapper bxt_hud_origin_anchor;
+	extern CVarWrapper bxt_hud_game_color;
+	extern CVarWrapper bxt_hud_game_alpha;
 
 	extern const std::vector<CVarWrapper*> allCVars;
 }

@@ -100,11 +100,13 @@ typedef void (*HUD_InitFn)(void);
 typedef int (*HUD_VidInitFn)(void);
 typedef int (*HUD_RedrawFn)(float, int);
 typedef void (*V_CalcRefdefFn)(struct ref_params_s*);
+typedef void (*ScaleColorsFn)(int* r, int* g, int* b, int a);
 
 HUD_VidInitFn HUD_VidInit_Original = NULL;
 HUD_InitFn HUD_Init_Original = NULL;
 HUD_RedrawFn HUD_Redraw_Original = NULL;
 V_CalcRefdefFn V_CalcRefdef_Original = NULL;
+ScaleColorsFn ScaleColors_Original = NULL;
 
 void HUD_Init_Hooked(void)
 {
@@ -128,6 +130,12 @@ void V_CalcRefdef_Hooked(struct ref_params_s* pparams)
 {
     CustomHud::V_CalcRefdef(pparams);
     return V_CalcRefdef_Original(pparams);
+}
+
+void ScaleColors_Hooked(int* r, int* g, int* b, int a)
+{
+    CustomHud::ScaleColors(r, g, b, a);
+    return ScaleColors_Original(r, g, b, a);
 }
 
 /* CLIENT - END */
@@ -484,6 +492,21 @@ void SvenBXT::AddCLStuff() {
             }
         }
         /* gEngfuncs hook - END */
+
+        auto fScaleColors = utils.FindAsync(ScaleColors_Original, patterns::client::ScaleColors);
+        auto pattern = fScaleColors.get();
+
+        if (ScaleColors_Original)
+        {
+            PrintDevMessage("[client dll] Found ScaleColors at %p (using the %s pattern).\n", ScaleColors_Original, pattern->name());
+
+            void* pScaleColors = (void*)ScaleColors_Original;
+
+            MH_CreateHook(pScaleColors, (void*)ScaleColors_Hooked, (void**)&ScaleColors_Original);
+            MH_EnableHook(pScaleColors); // will be replaced - https://github.com/YaLTeR/BunnymodXT/blob/master/BunnymodXT/modules/ClientDLL.cpp#L114-L170
+
+            RegisterCVar(CVars::bxt_hud_game_color);
+        }
     }
     else {
         printf("[client dll] Could not get module info of client.dll.\n");

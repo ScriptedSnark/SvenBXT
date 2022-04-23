@@ -12,6 +12,7 @@ namespace CustomHud
 		float health;
 	} playerinfo;
 
+	void ScaleColors(int* r, int* g, int* b, int a);
 	void Init();
 	void InitIfNecessary();
 	void VidInit();
