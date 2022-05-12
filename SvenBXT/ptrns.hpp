@@ -79,7 +79,9 @@ namespace patterns {
 			"Halfquake-Trilogy",
 			"55 8B EC 66 0F 6E 4D",
 			"Sven-8832",
-			"66 0F 6E 4C 24 ?? 8B 4C 24"
+			"66 0F 6E 4C 24 ?? 8B 4C 24",
+			"Sven-8458",
+			"DB 44 24 ?? 56 8B 74 24 ??"
 		);
 	}
 	namespace shared
