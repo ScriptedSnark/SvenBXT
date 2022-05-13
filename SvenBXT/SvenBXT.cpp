@@ -383,7 +383,11 @@ void SvenBXT::AddHWStuff() {
             V_CalcRefdef_Original = g_pClientFuncs->V_CalcRefdef;
             g_pClientFuncs->V_CalcRefdef = V_CalcRefdef_Hooked;
         }
-
+        else
+        {
+            PrintDevWarning("Could not find ClientFuncs !!!\n");
+            PrintWarning("Seems SvenBXT doesn't support your Sven Co-op version!\n");
+        }
         /* COMMANDS START - STRUCTS */
 
         struct Cmd_BXT_Append
@@ -507,6 +511,8 @@ void SvenBXT::AddCLStuff() {
 
             RegisterCVar(CVars::bxt_hud_game_color);
         }
+        else
+            PrintDevWarning("[client dll] Could not find ScaleColors.\n");
     }
     else {
         printf("[client dll] Could not get module info of client.dll.\n");
