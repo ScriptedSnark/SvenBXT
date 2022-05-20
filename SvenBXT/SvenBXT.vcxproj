@@ -14,7 +14,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{3ebb1c62-29ff-4c0a-bb9c-c5b07736b59d}</ProjectGuid>
-    <RootNamespace>MoonLoader</RootNamespace>
+    <RootNamespace>SvenBXT</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
