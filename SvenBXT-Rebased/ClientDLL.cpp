@@ -162,11 +162,11 @@ void CClientHooks::Initialize() {
 				printf("[client dll] Found Initialize at %p.\n", pInitialize);
 				
 				char* addr;
-				FindAsync(clientDll, new CIntelligentPattern({ 0xBF, 0xCC, 0xCC, 0xCC, 0xCC, 0xF3, 0xA5 }, "x????xx", "Unknown"), addr, [&](std::string ver) {
+				FindAsync(clientDll, new CIntelligentPattern("BF ?? ?? ?? ?? F3 A5", "Unspecified"), addr, [&](std::string ver) {
 						pEngfuncs = *reinterpret_cast<cl_enginefunc_t**>(addr + 1);
 						printf("[client dll] pEngfuncs is %p.\n", pEngfuncs);
 					}, [&]() {
-						FindAsync(clientDll, new CIntelligentPattern({ 0xB9, 0xCC, 0xCC, 0xCC, 0xCC, 0x8B, 0x54, 0x24, 0x10 }, "x????xxxx", "Unknown"), addr, 
+						FindAsync(clientDll, new CIntelligentPattern("B9 ?? ?? ?? ?? 8B 54 24 10", "Unspecified"), addr,
 							[&](std::string ver) {
 								pEngfuncs = *reinterpret_cast<cl_enginefunc_t**>(addr + 1);
 								printf("[client dll] pEngfuncs is %p.\n", pEngfuncs);
