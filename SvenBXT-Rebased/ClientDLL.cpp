@@ -210,34 +210,19 @@ void CClientHooks::Initialize() {
 					else
 						pEngfuncs->Con_Printf("[client dll] Could not find IN_DeactivateMouse.\n");
 
-					MH_STATUS status = MH_CreateHook(ORIG_HUD_Init, HOOKED_HUD_Init, reinterpret_cast<void**>(&ORIG_HUD_Init));
-					if (status != MH_OK) {
-						pEngfuncs->Con_Printf("[client dll] Couldn't create hook for HUD_Init: %s\n", MH_StatusToString(status));
-					}
-					status = MH_CreateHook(ORIG_HUD_VidInit, HOOKED_HUD_VidInit, reinterpret_cast<void**>(&ORIG_HUD_VidInit));
-					if (status != MH_OK) {
-						pEngfuncs->Con_Printf("[client dll] Couldn't create hook for HUD_VidInit: %s\n", MH_StatusToString(status));
-					}
-					status = MH_CreateHook(ORIG_HUD_Redraw, HOOKED_HUD_Redraw, reinterpret_cast<void**>(&ORIG_HUD_Redraw));
-					if (status != MH_OK) {
-						pEngfuncs->Con_Printf("[client dll] Couldn't create hook for HUD_Redraw: %s\n", MH_StatusToString(status));
-					}
-					status = MH_CreateHook(ORIG_V_CalcRefdef, HOOKED_V_CalcRefdef, reinterpret_cast<void**>(&ORIG_V_CalcRefdef));
-					if (status != MH_OK) {
-						pEngfuncs->Con_Printf("[client dll] Couldn't create hook for V_CalcRefdef: %s\n", MH_StatusToString(status));
-					}
-					status = MH_CreateHook(ORIG_CL_CreateMove, HOOKED_CL_CreateMove, reinterpret_cast<void**>(&ORIG_CL_CreateMove));
-					if (status != MH_OK) {
-						pEngfuncs->Con_Printf("[client dll] Couldn't create hook for CL_CreateMove: %s\n", MH_StatusToString(status));
-					}
-					status = MH_CreateHook(ORIG_HUD_PlayerMove, HOOKED_HUD_PlayerMove, reinterpret_cast<void**>(&ORIG_HUD_PlayerMove));
-					if (status != MH_OK) {
-						pEngfuncs->Con_Printf("[client dll] Couldn't create hook for HUD_PlayerMove: %s\n", MH_StatusToString(status));
-					}
+					MH_STATUS status;
+					CreateHook(HUD_Init);
+					CreateHook(HUD_VidInit);
+					CreateHook(HUD_Redraw);
+					CreateHook(V_CalcRefdef);
+					CreateHook(CL_CreateMove);
+					CreateHook(HUD_PlayerMove);
+
 					status = MH_EnableHook(MH_ALL_HOOKS);
 					if (status != MH_OK) {
 						pEngfuncs->Con_Printf("[client dll] Couldn't enable hooks: %s\n", MH_StatusToString(status));
 					}
+
 					if (status == MH_OK) {
 						pEngfuncs->Con_Printf("[SvenBXT] Hooked!\n");
 					}

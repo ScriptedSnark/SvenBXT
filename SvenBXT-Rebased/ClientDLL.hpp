@@ -26,6 +26,12 @@ typedef void (*_IN_ActivateMouse)();
 typedef void (*_IN_DeactivateMouse)();
 typedef void (*_SMR_StudioSetupBones)(void);
 
+#define CreateHook(func_name) \
+	status = MH_CreateHook(ORIG_##func_name, HOOKED_##func_name, reinterpret_cast<void**>(&ORIG_##func_name)); \
+	if (status != MH_OK) { \
+		pEngfuncs->Con_Printf("[client dll] Couldn't create hook for " #func_name ": %s\n", MH_StatusToString(status)); \
+	}
+
 typedef struct CClientHooks {
 	static void Initialize();
 } CClientHooks;
