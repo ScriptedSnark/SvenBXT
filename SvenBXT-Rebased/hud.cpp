@@ -646,7 +646,7 @@ namespace CustomHud
 			crosshairDotColor[1] = g;
 			crosshairDotColor[2] = b;
 
-			if (!CVAR_GET_FLOAT("bxt_cross_dot_color")) {
+			if (CVAR_GET_STRING("bxt_cross_dot_color")[0]) {
 				gl.color(crosshairDotColor[0], crosshairDotColor[1], crosshairDotColor[2], alpha);
 			}
 			else {
