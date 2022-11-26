@@ -27,6 +27,7 @@ namespace CustomHud
 		float health;
 	} playerinfo;
 	
+	void DrawCustomTimer(float time);
 	void Init();
 	void InitIfNecessary();
 	void VidInit();

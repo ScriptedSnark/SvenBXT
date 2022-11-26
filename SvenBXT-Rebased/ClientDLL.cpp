@@ -98,11 +98,27 @@ void HOOKED_CL_CreateMove(float frametime, usercmd_s* cmd, int active) {
 #endif
 }
 
+extern float m_flTurnoff, hudTime;
+extern bool DrawTimer;
+
+void CustomTimer()
+{
+	if (!hudTime)
+		return;
+
+	if (2 == pEngfuncs->Cmd_Argc())
+	{
+		m_flTurnoff = hudTime + atof(pEngfuncs->Cmd_Argv(1));
+		DrawTimer = true;
+	}
+}
+
 void CL_RegisterCmds() {
 #ifdef _DEBUG
 	pEngfuncs->pfnAddCommand("+bxt_tas_ducktap", IN_BXT_TAS_Ducktap_Down);
 	pEngfuncs->pfnAddCommand("-bxt_tas_ducktap", IN_BXT_TAS_Ducktap_Up);
 #endif
+	pEngfuncs->pfnAddCommand("bxt_customtimer", CustomTimer);
 }
 
 void CL_RegisterCVars()

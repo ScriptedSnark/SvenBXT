@@ -7,6 +7,10 @@ inline float CVAR_GET_FLOAT(const char* x) { return pEngfuncs->pfnGetCvarFloat((
 inline char* CVAR_GET_STRING(const char* x) { return pEngfuncs->pfnGetCvarString((char*)x); }
 inline struct cvar_s* CVAR_CREATE(const char* cv, const char* val, const int flags) { return pEngfuncs->pfnRegisterVariable((char*)cv, (char*)val, flags); }
 
+float hudTime;
+bool DrawTimer = false;
+float m_flTurnoff;
+
 namespace CustomHud
 {
 	static const float FADE_DURATION_JUMPSPEED = 0.7f;
@@ -67,15 +71,19 @@ namespace CustomHud
 		return width;
 	}
 
-	static int DrawString(int x, int y, const char* s, float r, float g, float b)
+	static int DrawString(int x, int y, const char* s, float r, float g, float b, bool console = true)
 	{
 		pEngfuncs->pfnDrawSetTextColor(r, g, b);
-		return pEngfuncs->pfnDrawConsoleString(x, y, const_cast<char*>(s));
+
+		if (console)
+			return pEngfuncs->pfnDrawConsoleString(x, y, const_cast<char*>(s));
+		else
+			return pEngfuncs->pfnDrawString(x, y, const_cast<char*>(s), r, g, b);
 	}
 
-	static inline int DrawString(int x, int y, const char* s)
+	static inline int DrawString(int x, int y, const char* s, bool console = true)
 	{
-		return DrawString(x, y, s, consoleColor[0], consoleColor[1], consoleColor[2]);
+		return DrawString(x, y, s, consoleColor[0], consoleColor[1], consoleColor[2], console);
 	}
 
 	static int DrawMultilineString(int x, int y, std::string s, float r, float g, float b)
@@ -674,6 +682,25 @@ namespace CustomHud
 	}
 	*/
 
+	void DrawCustomTimer(float time)
+	{
+		if (!DrawTimer)
+			return;
+
+		if (m_flTurnoff < hudTime)
+		{
+			pEngfuncs->pfnPlaySoundByName("fvox/bell.wav", 1);
+			DrawTimer = false;
+			return;
+		}
+
+		char szText[32];
+		float diff = m_flTurnoff - hudTime;
+		sprintf_s(szText, "Timer: %.01f", diff);
+
+		DrawString(si.iWidth / 2.1, si.iCharHeight * 4, szText);
+	}
+
 	void Init()
 	{
 		SpriteList = nullptr;
@@ -743,6 +770,8 @@ namespace CustomHud
 
 	void Draw(float flTime)
 	{
+		hudTime = flTime;
+
 		if (CVAR_GET_FLOAT("bxt_hud") == 0)
 			return;
 
@@ -754,6 +783,7 @@ namespace CustomHud
 		DrawJumpspeed(flTime);
 		DrawOrigin(flTime);
 		DrawCrosshair(flTime);
+		DrawCustomTimer(flTime);
 	}
 
 	void V_CalcRefdef(struct ref_params_s* pparams)
