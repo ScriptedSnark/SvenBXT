@@ -48,7 +48,7 @@ typedef struct CIntelligentPattern {
 		std::string mask = "";
 		std::map<std::vector<uint8_t>, std::string> _pattern;
 		auto splitten = split(peidPattern, ' ');
-		for (int idx = 0; idx < splitten.size(); idx++) {
+		for (unsigned int idx = 0; idx < splitten.size(); idx++) {
 			if (splitten[idx] == "??") {
 				mask.append("?");
 				pattern.push_back(0xCC);
@@ -64,14 +64,14 @@ typedef struct CIntelligentPattern {
 		patterns.push_back(final_pattern);
 	}
 	explicit CIntelligentPattern(std::vector<std::string> peidPatterns, std::vector<std::string> versions) {
-		for (int idx = 0; idx < peidPatterns.size(); idx++) {
+		for (unsigned int idx = 0; idx < peidPatterns.size(); idx++) {
 			auto peidPattern = peidPatterns.at(idx);
 			auto version = versions.at(idx);
 			std::vector<uint8_t> pattern = {};
 			std::string mask = "";
 			std::map<std::vector<uint8_t>, std::string> _pattern;
 			auto splitten = split(peidPattern, ' ');
-			for (int idx = 0; idx < splitten.size(); idx++) {
+			for (unsigned int idx = 0; idx < splitten.size(); idx++) {
 				if (splitten[idx] == "??") {
 					mask.append("?");
 					pattern.push_back(0xCC);

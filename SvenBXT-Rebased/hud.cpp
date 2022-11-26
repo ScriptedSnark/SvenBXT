@@ -369,7 +369,7 @@ namespace CustomHud
 
 	static void UpdatePrecision()
 	{
-		precision = CVAR_GET_FLOAT("bxt_hud_precision");
+		precision = floor(abs(atof(CVAR_GET_STRING("bxt_hud_precision"))));
 
 		if (precision > 16)
 			precision = 16;
