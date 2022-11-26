@@ -8,7 +8,7 @@ You can legally use this tool for [Sven Co-op runs](https://www.speedrun.com/sve
 ## Credits
 **Thanks to [YaLTeR](https://github.com/YaLTeR) for [BunnymodXT](https://github.com/YaLTeR/BunnymodXT)!**
 
-[xWhitey](https://github.com/xWhitey) - project template and some help with learning original BXT code.
+[Terrorgor](https://github.com/Terrorgor) - project template and some help with learning original BXT code.
 
 [sw1ft747](https://github.com/sw1ft747) - huge help with drawing custom HUD, remaking HUD hook code.
 
