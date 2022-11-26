@@ -6,7 +6,7 @@ SvenBXT is a remake of [BunnymodXT](https://github.com/YaLTeR/BunnymodXT) for Sv
 You can legally use this tool for [Sven Co-op runs](https://www.speedrun.com/sven_coop).
 
 ## Credits
-**Thanks to [YaLTeR](https://github.com/YaLTeR) for [BunnymodXT](https://github.com/YaLTeR/BunnymodXT) and [SPTLib](https://github.com/YaLTeR/SPTLib)!**
+**Thanks to [YaLTeR](https://github.com/YaLTeR) for [BunnymodXT](https://github.com/YaLTeR/BunnymodXT)!**
 
 [xWhitey](https://github.com/xWhitey) - project template and some help with learning original BXT code.
 
