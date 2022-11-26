@@ -8,7 +8,7 @@ You can legally use this tool for [Sven Co-op runs](https://www.speedrun.com/sve
 This repository contains only [bugtracker](https://github.com/ScriptedSnark/SvenBXT/issues) and [releases](https://github.com/ScriptedSnark/SvenBXT/releases).
 
 ## Credits
-**Thanks to [YaLTeR](https://github.com/YaLTeR) for [BunnymodXT](https://github.com/YaLTeR/BunnymodXT) and [SPTLib](https://github.com/YaLTeR/SPTLib)!**
+**Thanks to [YaLTeR](https://github.com/YaLTeR) for [BunnymodXT](https://github.com/YaLTeR/BunnymodXT)!*
 
 [xWhitey](https://github.com/xWhitey) - project template and some help with learning original BXT code.
 
