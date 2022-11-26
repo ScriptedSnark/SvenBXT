@@ -396,3 +396,10 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Other
+SvenBXT-Injector/Release/
+SvenBXT-Rebased/Release/
+
+SvenBXT-Injector/Debug/
+SvenBXT-Rebased/Debug/
