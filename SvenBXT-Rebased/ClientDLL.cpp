@@ -70,7 +70,7 @@ void HOOKED_HUD_PlayerMove(struct playermove_s* ppmove, qboolean server) {
 void HOOKED_CL_CreateMove(float frametime, usercmd_s* cmd, int active) {
 	ORIG_CL_CreateMove(frametime, cmd, active);
 	
-#ifdef __DEBUG
+#ifdef _DEBUG
 	if (!pmove) return;
 
 	if (ducktap_down) {
