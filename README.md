@@ -21,3 +21,7 @@ You can legally use this tool for [Sven Co-op runs](https://www.speedrun.com/sve
 
  1. Run Sven Co-op (latest from Steam)
  2. Run SvenBXT-Injector.exe
+
+## Screenshots
+![menu](https://user-images.githubusercontent.com/51358194/204095358-7353d010-d429-4ab9-9345-55c803dc1bc8.png)
+![ingame](https://user-images.githubusercontent.com/51358194/204095567-5f036009-8fbe-4a33-81eb-c0115164421d.png)
