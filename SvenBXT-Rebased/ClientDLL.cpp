@@ -248,7 +248,7 @@ void CClientHooks::Initialize() {
 					}
 
 					if (status == MH_OK) {
-						pEngfuncs->Con_Printf("[client dll] Hooked!\n");
+						pEngfuncs->Con_Printf("[client dll] Hooked!\nSvenBXT build date: " __TIMESTAMP__ "\n");
 					}
 				}
 			} else {
