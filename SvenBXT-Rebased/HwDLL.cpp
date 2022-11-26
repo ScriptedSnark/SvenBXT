@@ -27,6 +27,7 @@ void __cdecl HOOKED_Draw_FillRGBA(int x, int y, int w, int h, int r, int g, int 
 	ORIG_Draw_FillRGBA(x, y, w, h, bxt_r, bxt_g, bxt_b, a);
 }
 
+#ifdef _DEBUG
 void Cmd_BXT_Append() {
 	if (pEngfuncs->Cmd_Argc() > 1) {
 		ORIG_Cbuf_AddText(pEngfuncs->Cmd_Argv(1));
@@ -56,18 +57,25 @@ void Cmd_Multiwait() {
 		ORIG_Cbuf_InsertText("wait\n");
 	}
 }
+#endif
 
 void CEngineHooks::Initialize() {
 	void* hwDll = GetModuleHandleA("hw");
 	if (hwDll) {
+#ifdef _DEBUG
 		Find(Cbuf_AddText);
 		Find(Cbuf_InsertText);
+#endif
 		Hook(SPR_Set);
 		Hook(Draw_FillRGBA);
+
 		MH_EnableHook(MH_ALL_HOOKS);
+
+#ifdef _DEBUG
 		pEngfuncs->pfnAddCommand("bxt_append", Cmd_BXT_Append);
 		pEngfuncs->pfnAddCommand("w", Cmd_Multiwait);
 		pEngfuncs->pfnAddCommand("special", Cmd_Special);
+#endif
 	} else {
 		printf("Couldn't find hw.dll module!\n");
 	}

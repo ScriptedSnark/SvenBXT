@@ -19,7 +19,9 @@ _HUD_PlayerMove ORIG_HUD_PlayerMove = nullptr;
 _IN_ActivateMouse ORIG_IN_ActivateMouse = nullptr;
 _IN_DeactivateMouse ORIG_IN_DeactivateMouse = nullptr;
 
+#ifdef _DEBUG
 cvar_t* bxt_autojump;
+#endif
 
 bool ducktap_down = false;
 
@@ -68,6 +70,7 @@ void HOOKED_HUD_PlayerMove(struct playermove_s* ppmove, qboolean server) {
 void HOOKED_CL_CreateMove(float frametime, usercmd_s* cmd, int active) {
 	ORIG_CL_CreateMove(frametime, cmd, active);
 	
+#ifdef __DEBUG
 	if (!pmove) return;
 
 	if (ducktap_down) {
@@ -92,11 +95,14 @@ void HOOKED_CL_CreateMove(float frametime, usercmd_s* cmd, int active) {
 			cmd->buttons &= ~IN_JUMP;
 		}
 	}
+#endif
 }
 
 void CL_RegisterCmds() {
+#ifdef _DEBUG
 	pEngfuncs->pfnAddCommand("+bxt_tas_ducktap", IN_BXT_TAS_Ducktap_Down);
 	pEngfuncs->pfnAddCommand("-bxt_tas_ducktap", IN_BXT_TAS_Ducktap_Up);
+#endif
 }
 
 void CL_RegisterCVars()
@@ -104,7 +110,9 @@ void CL_RegisterCVars()
 	if (!ORIG_HUD_Init)
 		return;
 
+#ifdef _DEBUG
 	bxt_autojump = CVAR_CREATE("bxt_autojump", "1", 0);
+#endif
 
 	// HUD things
 	CVAR_CREATE("bxt_hud", "1", 0);
@@ -224,7 +232,7 @@ void CClientHooks::Initialize() {
 					}
 
 					if (status == MH_OK) {
-						pEngfuncs->Con_Printf("[SvenBXT] Hooked!\n");
+						pEngfuncs->Con_Printf("[client dll] Hooked!\n");
 					}
 				}
 			} else {
