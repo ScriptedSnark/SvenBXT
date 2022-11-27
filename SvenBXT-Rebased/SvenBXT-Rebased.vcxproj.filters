@@ -50,6 +50,9 @@
     <ClCompile Include="opengl_utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="tri.cpp">
+      <Filter>Modules\Client</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="includes.hpp">
@@ -93,6 +96,12 @@
     </ClInclude>
     <ClInclude Include="opengl_utils.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tri.hpp">
+      <Filter>Modules\Client</Filter>
+    </ClInclude>
+    <ClInclude Include="cl_util.h">
+      <Filter>Modules\Client</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

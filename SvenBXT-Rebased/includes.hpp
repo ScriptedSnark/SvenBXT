@@ -33,13 +33,12 @@
 
 //HLSDK
 #include "hlsdk_mini.hpp"
+#include "cl_util.h"
 
 //OpenGL
 #include <gl/GL.h>
 
 #pragma comment(lib, "opengl32.lib")
-
-extern cl_enginefunc_t* pEngfuncs;
 
 #endif //INCLUDES_HPP_GUARD
 

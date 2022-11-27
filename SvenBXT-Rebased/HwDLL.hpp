@@ -15,8 +15,6 @@
 
 #include "includes.hpp"
 
-extern cl_enginefunc_t* pEngfuncs;
-
 #define Find(future_name) \
             { \
                 FindAsync(hwDll, patterns::engine::future_name, ORIG_##future_name, [&](std::string ver) { \

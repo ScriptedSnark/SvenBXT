@@ -1,12 +1,6 @@
 #include "hud.hpp"
 #include "opengl_utils.hpp"
 
-extern cl_enginefunc_t* pEngfuncs;
-
-inline float CVAR_GET_FLOAT(const char* x) { return pEngfuncs->pfnGetCvarFloat((char*)x); }
-inline char* CVAR_GET_STRING(const char* x) { return pEngfuncs->pfnGetCvarString((char*)x); }
-inline struct cvar_s* CVAR_CREATE(const char* cv, const char* val, const int flags) { return pEngfuncs->pfnRegisterVariable((char*)cv, (char*)val, flags); }
-
 float hudTime;
 bool DrawTimer = false;
 float m_flTurnoff;

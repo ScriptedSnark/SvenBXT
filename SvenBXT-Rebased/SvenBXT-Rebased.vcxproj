@@ -174,8 +174,10 @@
     <ClCompile Include="MinHook\hook.c" />
     <ClCompile Include="MinHook\trampoline.c" />
     <ClCompile Include="opengl_utils.cpp" />
+    <ClCompile Include="tri.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cl_util.h" />
     <ClInclude Include="hud.hpp" />
     <ClInclude Include="ClientDLL.hpp" />
     <ClInclude Include="hlsdk_mini.hpp" />
@@ -190,6 +192,7 @@
     <ClInclude Include="MinHook\trampoline.h" />
     <ClInclude Include="opengl_utils.hpp" />
     <ClInclude Include="patterns.hpp" />
+    <ClInclude Include="tri.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

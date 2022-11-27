@@ -5,10 +5,6 @@
 
 cl_enginefunc_t* pEngfuncs;
 
-inline float CVAR_GET_FLOAT(const char* x) { return pEngfuncs->pfnGetCvarFloat((char*)x); }
-inline char* CVAR_GET_STRING(const char* x) { return pEngfuncs->pfnGetCvarString((char*)x); }
-inline struct cvar_s* CVAR_CREATE(const char* cv, const char* val, const int flags) { return pEngfuncs->pfnRegisterVariable((char*)cv, (char*)val, flags); }
-
 _HUD_Init ORIG_HUD_Init = nullptr;
 _HUD_VidInit ORIG_HUD_VidInit = nullptr;
 _HUD_Redraw ORIG_HUD_Redraw = nullptr;
@@ -171,6 +167,9 @@ void CL_RegisterCVars()
 	CVAR_CREATE("bxt_cross_bottom_line", "1", 0);
 	CVAR_CREATE("bxt_cross_left_line", "1", 0);
 	CVAR_CREATE("bxt_cross_right_line", "1", 0);
+
+	// Tri cvars
+	CVAR_CREATE("bxt_show_triggers", "0", 0);
 }
 
 void CClientHooks::Initialize() {
