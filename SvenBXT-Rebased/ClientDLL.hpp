@@ -26,6 +26,12 @@ typedef void (*_IN_ActivateMouse)();
 typedef void (*_IN_DeactivateMouse)();
 typedef void (*_SMR_StudioSetupBones)(void);
 
+#define FindbySymbol(func_name) \
+	if ((ORIG_##func_name = reinterpret_cast<_##func_name>(GetProcAddress(reinterpret_cast<HMODULE>(clientDll), "" #func_name "")))) \
+		pEngfuncs->Con_Printf("[client dll] Found " #func_name " at %p.\n", ORIG_HUD_VidInit); \
+	else \
+		pEngfuncs->Con_Printf("[client dll] Could not find " #func_name ".\n"); \
+
 #define CreateHook(func_name) \
 	status = MH_CreateHook(ORIG_##func_name, HOOKED_##func_name, reinterpret_cast<void**>(&ORIG_##func_name)); \
 	if (status != MH_OK) { \

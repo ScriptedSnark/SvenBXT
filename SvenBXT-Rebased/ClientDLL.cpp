@@ -194,45 +194,14 @@ void CClientHooks::Initialize() {
 					else
 						pEngfuncs->Con_Printf("[client dll] Could not find HUD_Init.\n");
 
-					if ((ORIG_HUD_VidInit = reinterpret_cast<_HUD_VidInit>(GetProcAddress(reinterpret_cast<HMODULE>(clientDll), "HUD_VidInit"))))
-						pEngfuncs->Con_Printf("[client dll] Found HUD_VidInit at %p.\n", ORIG_HUD_VidInit);
-					else
-						pEngfuncs->Con_Printf("[client dll] Could not find HUD_VidInit.\n");
-
-					if ((ORIG_HUD_Redraw = reinterpret_cast<_HUD_Redraw>(GetProcAddress(reinterpret_cast<HMODULE>(clientDll), "HUD_Redraw"))))
-						pEngfuncs->Con_Printf("[client dll] Found HUD_Redraw at %p.\n", ORIG_HUD_Redraw);
-					else
-						pEngfuncs->Con_Printf("[client dll] Could not find HUD_Redraw.\n");
-
-					if ((ORIG_HUD_Frame = reinterpret_cast<_HUD_Frame>(GetProcAddress(reinterpret_cast<HMODULE>(clientDll), "HUD_Frame"))))
-						pEngfuncs->Con_Printf("[client dll] Found HUD_Frame at %p.\n", ORIG_HUD_Frame);
-					else
-						pEngfuncs->Con_Printf("[client dll] Could not find HUD_Frame.\n");
-
-					if ((ORIG_HUD_PlayerMove = reinterpret_cast<_HUD_PlayerMove>(GetProcAddress(reinterpret_cast<HMODULE>(clientDll), "HUD_PlayerMove"))))
-						pEngfuncs->Con_Printf("[client dll] Found HUD_PlayerMove at %p.\n", ORIG_HUD_PlayerMove);
-					else
-						pEngfuncs->Con_Printf("[client dll] Could not find HUD_PlayerMove.\n");
-
-					if ((ORIG_V_CalcRefdef = reinterpret_cast<_V_CalcRefdef>(GetProcAddress(reinterpret_cast<HMODULE>(clientDll), "V_CalcRefdef"))))
-						pEngfuncs->Con_Printf("[client dll] Found V_CalcRefdef at %p.\n", ORIG_V_CalcRefdef);
-					else
-						pEngfuncs->Con_Printf("[client dll] Could not find V_CalcRefdef.\n");
-
-					if ((ORIG_CL_CreateMove = reinterpret_cast<_CL_CreateMove>(GetProcAddress(reinterpret_cast<HMODULE>(clientDll), "CL_CreateMove"))))
-						pEngfuncs->Con_Printf("[client dll] Found CL_CreateMove at %p.\n", ORIG_CL_CreateMove);
-					else
-						pEngfuncs->Con_Printf("[client dll] Could not find CL_CreateMove.\n");
-
-					if ((ORIG_IN_ActivateMouse = reinterpret_cast<_IN_ActivateMouse>(GetProcAddress(reinterpret_cast<HMODULE>(clientDll), "IN_ActivateMouse"))))
-						pEngfuncs->Con_Printf("[client dll] Found IN_ActivateMouse at %p.\n", ORIG_IN_ActivateMouse);
-					else
-						pEngfuncs->Con_Printf("[client dll] Could not find IN_ActivateMouse.\n");
-
-					if ((ORIG_IN_DeactivateMouse = reinterpret_cast<_IN_DeactivateMouse>(GetProcAddress(reinterpret_cast<HMODULE>(clientDll), "IN_DeactivateMouse"))))
-						pEngfuncs->Con_Printf("[client dll] Found IN_DeactivateMouse at %p.\n", ORIG_IN_DeactivateMouse);
-					else
-						pEngfuncs->Con_Printf("[client dll] Could not find IN_DeactivateMouse.\n");
+					FindbySymbol(HUD_VidInit);
+					FindbySymbol(HUD_Redraw);
+					FindbySymbol(HUD_Frame);
+					FindbySymbol(HUD_PlayerMove);
+					FindbySymbol(V_CalcRefdef);
+					FindbySymbol(CL_CreateMove);
+					FindbySymbol(IN_ActivateMouse);
+					FindbySymbol(IN_DeactivateMouse);
 
 					MH_STATUS status;
 					CreateHook(HUD_Init);
