@@ -1,5 +1,5 @@
 /**
- * Copyright - xWhitey ~ ScriptedSnark, 2022.
+ * Copyright - BXT contributors ~ xWhitey ~ ScriptedSnark, 2022.
  * CCustomHUD.hpp - Client-side custom HUD (speedometer &c)
  */
 
