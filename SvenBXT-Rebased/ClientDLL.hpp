@@ -24,6 +24,7 @@ typedef void (*_V_CalcRefdef)(struct ref_params_s*);
 typedef void (*_HUD_PlayerMove)(struct playermove_s*, qboolean);
 typedef void (*_IN_ActivateMouse)();
 typedef void (*_IN_DeactivateMouse)();
+typedef void (*_HUD_DrawTransparentTriangles)(void);
 typedef void (*_SMR_StudioSetupBones)(void);
 
 #define FindbySymbol(func_name) \

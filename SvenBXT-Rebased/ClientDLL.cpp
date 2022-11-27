@@ -18,6 +18,7 @@ _V_CalcRefdef ORIG_V_CalcRefdef = nullptr;
 _HUD_PlayerMove ORIG_HUD_PlayerMove = nullptr;
 _IN_ActivateMouse ORIG_IN_ActivateMouse = nullptr;
 _IN_DeactivateMouse ORIG_IN_DeactivateMouse = nullptr;
+_HUD_DrawTransparentTriangles ORIG_HUD_DrawTransparentTriangles = nullptr;
 
 #ifdef _DEBUG
 cvar_t* bxt_autojump;
@@ -96,6 +97,11 @@ void HOOKED_CL_CreateMove(float frametime, usercmd_s* cmd, int active) {
 		}
 	}
 #endif
+}
+
+void HOOKED_HUD_DrawTransparentTriangles(void)
+{
+	ORIG_HUD_DrawTransparentTriangles();
 }
 
 extern float m_flTurnoff, hudTime;
@@ -205,6 +211,7 @@ void CClientHooks::Initialize() {
 					FindbySymbol(CL_CreateMove);
 					FindbySymbol(IN_ActivateMouse);
 					FindbySymbol(IN_DeactivateMouse);
+					FindbySymbol(HUD_DrawTransparentTriangles);
 
 					MH_STATUS status;
 					CreateHook(HUD_Init);
@@ -213,6 +220,7 @@ void CClientHooks::Initialize() {
 					CreateHook(V_CalcRefdef);
 					CreateHook(CL_CreateMove);
 					CreateHook(HUD_PlayerMove);
+					CreateHook(HUD_DrawTransparentTriangles);
 
 					status = MH_EnableHook(MH_ALL_HOOKS);
 					if (status != MH_OK) {
