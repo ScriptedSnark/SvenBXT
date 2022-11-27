@@ -108,6 +108,9 @@ void CustomTimer()
 
 	if (2 == pEngfuncs->Cmd_Argc())
 	{
+		if (atof(pEngfuncs->Cmd_Argv(1)) > 300)
+			return;
+
 		m_flTurnoff = hudTime + atof(pEngfuncs->Cmd_Argv(1));
 		DrawTimer = true;
 	}
