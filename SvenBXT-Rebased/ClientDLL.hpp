@@ -29,7 +29,7 @@ typedef void (*_SMR_StudioSetupBones)(void);
 
 #define FindbySymbol(func_name) \
 	if ((ORIG_##func_name = reinterpret_cast<_##func_name>(GetProcAddress(reinterpret_cast<HMODULE>(clientDll), "" #func_name "")))) \
-		pEngfuncs->Con_Printf("[client dll] Found " #func_name " at %p.\n", ORIG_HUD_VidInit); \
+		pEngfuncs->Con_Printf("[client dll] Found " #func_name " at %p.\n", ORIG_##func_name); \
 	else \
 		pEngfuncs->Con_Printf("[client dll] Could not find " #func_name ".\n"); \
 
