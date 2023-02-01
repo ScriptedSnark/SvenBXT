@@ -27,7 +27,7 @@ void __cdecl HOOKED_Draw_FillRGBA(int x, int y, int w, int h, int r, int g, int 
 	ORIG_Draw_FillRGBA(x, y, w, h, bxt_r, bxt_g, bxt_b, a);
 }
 
-#ifdef _DEBUG
+#ifdef BXT_TESTS
 void Cmd_BXT_Append() {
 	if (pEngfuncs->Cmd_Argc() > 1) {
 		ORIG_Cbuf_AddText(pEngfuncs->Cmd_Argv(1));
@@ -62,7 +62,7 @@ void Cmd_Multiwait() {
 void CEngineHooks::Initialize() {
 	void* hwDll = GetModuleHandleA("hw");
 	if (hwDll) {
-#ifdef _DEBUG
+#ifdef BXT_TESTS
 		Find(Cbuf_AddText);
 		Find(Cbuf_InsertText);
 #endif
@@ -71,7 +71,7 @@ void CEngineHooks::Initialize() {
 
 		MH_EnableHook(MH_ALL_HOOKS);
 
-#ifdef _DEBUG
+#ifdef BXT_TESTS
 		pEngfuncs->pfnAddCommand("bxt_append", Cmd_BXT_Append);
 		pEngfuncs->pfnAddCommand("w", Cmd_Multiwait);
 		pEngfuncs->pfnAddCommand("special", Cmd_Special);

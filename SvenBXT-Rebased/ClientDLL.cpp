@@ -16,7 +16,7 @@ _IN_ActivateMouse ORIG_IN_ActivateMouse = nullptr;
 _IN_DeactivateMouse ORIG_IN_DeactivateMouse = nullptr;
 _HUD_DrawTransparentTriangles ORIG_HUD_DrawTransparentTriangles = nullptr;
 
-#ifdef _DEBUG
+#ifdef BXT_TESTS
 cvar_t* bxt_autojump;
 #endif
 
@@ -67,7 +67,7 @@ void HOOKED_HUD_PlayerMove(struct playermove_s* ppmove, qboolean server) {
 void HOOKED_CL_CreateMove(float frametime, usercmd_s* cmd, int active) {
 	ORIG_CL_CreateMove(frametime, cmd, active);
 	
-#ifdef _DEBUG
+#ifdef BXT_TESTS
 	if (!pmove) return;
 
 	if (ducktap_down) {
@@ -119,7 +119,7 @@ void CustomTimer()
 }
 
 void CL_RegisterCmds() {
-#ifdef _DEBUG
+#ifdef BXT_TESTS
 	pEngfuncs->pfnAddCommand("+bxt_tas_ducktap", IN_BXT_TAS_Ducktap_Down);
 	pEngfuncs->pfnAddCommand("-bxt_tas_ducktap", IN_BXT_TAS_Ducktap_Up);
 #endif
@@ -131,7 +131,7 @@ void CL_RegisterCVars()
 	if (!ORIG_HUD_Init)
 		return;
 
-#ifdef _DEBUG
+#ifdef BXT_TESTS
 	bxt_autojump = CVAR_CREATE("bxt_autojump", "1", 0);
 #endif
 
