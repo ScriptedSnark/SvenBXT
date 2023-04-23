@@ -1,3 +1,4 @@
+#include "ClientDLL.hpp"
 #include "hud.hpp"
 #include "opengl_utils.hpp"
 
@@ -329,7 +330,7 @@ namespace CustomHud
 		consoleColor[2] = 30 / 255.0f;
 
 		unsigned r = 0, g = 0, b = 0;
-		std::istringstream ss(CVAR_GET_STRING("con_color"));
+		std::istringstream ss(con_color->string);
 		ss >> r >> g >> b;
 
 		consoleColor[0] = r / 255.0f;
@@ -341,7 +342,7 @@ namespace CustomHud
 		hudColor[1] = 130;
 		hudColor[2] = 200;
 
-		auto colorStr = CVAR_GET_STRING("bxt_hud_color");
+		auto colorStr = bxt_hud_color->string;
 		if (colorStr != "auto")
 		{
 			std::istringstream color_ss(colorStr);
@@ -353,12 +354,12 @@ namespace CustomHud
 	{
 		std::istringstream iss;
 
-		iss.str(CVAR_GET_STRING(Offset));
+		iss.str(Offset);
 		iss >> rx >> ry;
 		iss.str(std::string());
 		iss.clear();
 
-		iss.str(CVAR_GET_STRING(Anchor));
+		iss.str(Anchor);
 		float w = 0, h = 0;
 		iss >> w >> h;
 
@@ -371,7 +372,7 @@ namespace CustomHud
 
 	static void UpdatePrecision()
 	{
-		precision = floor(abs(atof(CVAR_GET_STRING("bxt_hud_precision"))));
+		precision = bxt_hud_precision->value;
 
 		if (precision > 16)
 			precision = 16;
@@ -387,10 +388,10 @@ namespace CustomHud
 
 	static void DrawOrigin(float flTime)
 	{
-		if (CVAR_GET_FLOAT("bxt_hud_origin"))
+		if (bxt_hud_origin->value)
 		{
 			int x, y;
-			GetPosition("bxt_hud_origin_offset", "bxt_hud_origin_anchor", &x, &y, -200, (si.iCharHeight * 6) + 1);
+			GetPosition(bxt_hud_origin_offset->string, bxt_hud_origin_anchor->string, &x, &y, -200, (si.iCharHeight * 6) + 1);
 
 			DrawString(x, y, "Origin:");
 
@@ -424,14 +425,14 @@ namespace CustomHud
 
 	void DrawViewangles(float flTime)
 	{
-		if (CVAR_GET_FLOAT("bxt_hud_viewangles"))
+		if (bxt_hud_viewangles->value)
 		{
 			int x, y;
 			float viewangle[2];
 			viewangle[0] = AngleNormalize(player.viewangles[0]);
 			viewangle[1] = AngleNormalize(player.viewangles[1]);
 
-			GetPosition("bxt_hud_viewangles_offset", "bxt_hud_viewangles_anchor", &x, &y, -200, (si.iCharHeight * 10) + 2);
+			GetPosition(bxt_hud_viewangles_offset->string, bxt_hud_viewangles_anchor->string, &x, &y, -200, (si.iCharHeight * 10) + 2);
 
 			std::ostringstream out;
 			out.setf(std::ios::fixed);
@@ -445,10 +446,10 @@ namespace CustomHud
 
 	static void DrawSpeedometer()
 	{
-		if (CVAR_GET_FLOAT("bxt_hud_speedometer"))
+		if (bxt_hud_speedometer->value)
 		{
 			int x, y;
-			GetPosition("bxt_hud_speedometer_offset", "bxt_hud_speedometer_anchor", &x, &y, 0, -2 * NumberHeight);
+			GetPosition(bxt_hud_speedometer_offset->string, bxt_hud_speedometer_anchor->string, &x, &y, 0, -2 * NumberHeight);
 			DrawNumber(static_cast<int>(trunc(length(player.velocity[0], player.velocity[1]))), x, y, (1 << 1));
 		}
 	}
@@ -457,7 +458,7 @@ namespace CustomHud
 	{
 		static float prevVel[3] = { 0.0f, 0.0f, 0.0f };
 
-		if (CVAR_GET_FLOAT("bxt_hud_jumpspeed"))
+		if (bxt_hud_jumpspeed->value)
 		{
 			static float lastTime = flTime;
 			static double passedTime = FADE_DURATION_JUMPSPEED;
@@ -514,7 +515,7 @@ namespace CustomHud
 			}
 
 			int x, y;
-			GetPosition("bxt_hud_jumpspeed_offset", "bxt_hud_jumpspeed_anchor", &x, &y, 0, -3 * NumberHeight);
+			GetPosition(bxt_hud_jumpspeed_offset->string, bxt_hud_jumpspeed_anchor->string, &x, &y, 0, -3 * NumberHeight);
 			DrawNumber(static_cast<int>(trunc(jumpSpeed)), x, y, r, g, b, (1 << 1));
 		}
 
@@ -523,14 +524,14 @@ namespace CustomHud
 
 	static void DrawCrosshair(float time)
 	{
-		if (CVAR_GET_FLOAT("bxt_cross") == 0)
+		if (bxt_cross->value == 0.0f)
 			return;
 
 		float old_circle_radius = 0;
 		std::vector<Vector2D> circle_points;
 
 		float r = 0.0f, g = 0.0f, b = 0.0f;
-		std::istringstream ss(CVAR_GET_STRING("bxt_cross_color"));
+		std::istringstream ss(bxt_cross_color->string);
 		ss >> r >> g >> b;
 
 		static float crosshairColor[3];
@@ -538,25 +539,25 @@ namespace CustomHud
 		crosshairColor[1] = g;
 		crosshairColor[2] = b;
 
-		float alpha = CVAR_GET_FLOAT("bxt_cross_alpha") / 255.0;
+		float alpha = bxt_cross_alpha->value / 255.0f;
 
 		Vector2D center(si.iWidth / 2.0f, si.iHeight / 2.0f);
 
 		GLUtils gl;
 
 		// Draw the outline.
-		if (CVAR_GET_FLOAT("bxt_cross_outline") > 0.0f) {
+		if (bxt_cross_outline->value > 0.0f) {
 			gl.color(0.0f, 0.0f, 0.0f, alpha);
-			gl.line_width(CVAR_GET_FLOAT("bxt_cross_outline"));
+			gl.line_width(bxt_cross_outline->value);
 
-			auto size = CVAR_GET_FLOAT("bxt_cross_size");
-			auto gap = CVAR_GET_FLOAT("bxt_cross_gap");
-			auto half_thickness = CVAR_GET_FLOAT("bxt_cross_thickness") / 2.0f;
-			auto half_width = CVAR_GET_FLOAT("bxt_cross_outline") / 2.0f;
+			auto size = bxt_cross_size->value;
+			auto gap = bxt_cross_gap->value;
+			auto half_thickness = bxt_cross_thickness->value / 2.0f;
+			auto half_width = bxt_cross_outline->value / 2.0f;
 			auto offset = half_thickness + half_width;
 
 			// Top line
-			if (CVAR_GET_FLOAT("bxt_cross_top_line")) {
+			if (bxt_cross_top_line->value) {
 				gl.line(Vector2D(center.x - offset, center.y - gap - size), Vector2D(center.x + offset, center.y - gap - size));
 				gl.line(Vector2D(center.x + half_thickness, center.y - gap - size + half_width), Vector2D(center.x + half_thickness, center.y - gap - half_width));
 				gl.line(Vector2D(center.x + offset, center.y - gap), Vector2D(center.x - offset, center.y - gap));
@@ -564,7 +565,7 @@ namespace CustomHud
 			}
 
 			// Bottom line
-			if (CVAR_GET_FLOAT("bxt_cross_bottom_line")) {
+			if (bxt_cross_bottom_line->value) {
 				gl.line(Vector2D(center.x - offset, center.y + gap + size), Vector2D(center.x + offset, center.y + gap + size));
 				gl.line(Vector2D(center.x + half_thickness, center.y + gap + size - half_width), Vector2D(center.x + half_thickness, center.y + gap + half_width));
 				gl.line(Vector2D(center.x + offset, center.y + gap), Vector2D(center.x - offset, center.y + gap));
@@ -572,7 +573,7 @@ namespace CustomHud
 			}
 
 			// Left line
-			if (CVAR_GET_FLOAT("bxt_cross_left_line")) {
+			if (bxt_cross_left_line->value) {
 				gl.line(Vector2D(center.x - gap - size, center.y - offset), Vector2D(center.x - gap - size, center.y + offset));
 				gl.line(Vector2D(center.x - gap - size + half_width, center.y + half_thickness), Vector2D(center.x - gap - half_width, center.y + half_thickness));
 				gl.line(Vector2D(center.x - gap, center.y + offset), Vector2D(center.x - gap, center.y - offset));
@@ -580,7 +581,7 @@ namespace CustomHud
 			}
 
 			// Right line
-			if (CVAR_GET_FLOAT("bxt_cross_right_line")) {
+			if (bxt_cross_right_line->value) {
 				gl.line(Vector2D(center.x + gap + size, center.y - offset), Vector2D(center.x + gap + size, center.y + offset));
 				gl.line(Vector2D(center.x + gap + size - half_width, center.y + half_thickness), Vector2D(center.x + gap + half_width, center.y + half_thickness));
 				gl.line(Vector2D(center.x + gap, center.y + offset), Vector2D(center.x + gap, center.y - offset));
@@ -588,8 +589,8 @@ namespace CustomHud
 			}
 
 			// Dot
-			if (CVAR_GET_FLOAT("bxt_cross_dot_size") > 0.0f) {
-				auto size = CVAR_GET_FLOAT("bxt_cross_dot_size");
+			if (bxt_cross_dot_size->value > 0.0f) {
+				auto size = bxt_cross_dot_size->value;
 				auto offset = Vector2D(size / 2.0f, size / 2.0f);
 
 				gl.line(Vector2D(center.x - offset.x - half_width, center.y - offset.y), Vector2D(center.x + offset.x + half_width, center.y - offset.y));
@@ -599,7 +600,7 @@ namespace CustomHud
 			}
 		}
 
-		if (CVAR_GET_STRING("bxt_cross_color")[0]) {
+		if (bxt_cross_color->string[0]) {
 			gl.color(crosshairColor[0], crosshairColor[1], crosshairColor[2], alpha);
 		}
 		else {
@@ -607,27 +608,27 @@ namespace CustomHud
 		}
 
 		// Draw the crosshairs.
-		if (CVAR_GET_FLOAT("bxt_cross_thickness") > 0.0f) {
-			gl.line_width(CVAR_GET_FLOAT("bxt_cross_thickness"));
+		if (bxt_cross_thickness->value > 0.0f) {
+			gl.line_width(bxt_cross_thickness->value);
 
-			auto size = CVAR_GET_FLOAT("bxt_cross_size");
-			auto gap = CVAR_GET_FLOAT("bxt_cross_gap");
+			auto size = bxt_cross_size->value;
+			auto gap = bxt_cross_gap->value;
 
-			if (CVAR_GET_FLOAT("bxt_cross_top_line"))
+			if (bxt_cross_top_line->value)
 				gl.line(Vector2D(center.x, center.y - gap - size), Vector2D(center.x, center.y - gap));
-			if (CVAR_GET_FLOAT("bxt_cross_bottom_line"))
+			if (bxt_cross_bottom_line->value)
 				gl.line(Vector2D(center.x, center.y + gap + size), Vector2D(center.x, center.y + gap));
-			if (CVAR_GET_FLOAT("bxt_cross_left_line"))
+			if (bxt_cross_left_line->value)
 				gl.line(Vector2D(center.x - gap - size, center.y), Vector2D(center.x - gap, center.y));
-			if (CVAR_GET_FLOAT("bxt_cross_right_line"))
+			if (bxt_cross_right_line->value)
 				gl.line(Vector2D(center.x + gap + size, center.y), Vector2D(center.x + gap, center.y));
 		}
 
 		// Draw the circle.
-		if (CVAR_GET_FLOAT("bxt_cross_circle_radius") > 0.0f) {
+		if (bxt_cross_circle_radius->value > 0.0f) {
 			gl.line_width(1.0f);
 
-			auto radius = CVAR_GET_FLOAT("bxt_cross_circle_radius");
+			auto radius = bxt_cross_circle_radius->value;
 			if (old_circle_radius != radius) {
 				// Recompute the circle points.
 				circle_points = gl.compute_circle(radius);
@@ -638,9 +639,9 @@ namespace CustomHud
 		}
 
 		// Draw the dot.
-		if (CVAR_GET_FLOAT("bxt_cross_dot_size") > 0.0f) {
+		if (bxt_cross_dot_size->value > 0.0f) {
 			float r = 0.0f, g = 0.0f, b = 0.0f;
-			std::istringstream ss(CVAR_GET_STRING("bxt_cross_dot_color"));
+			std::istringstream ss(bxt_cross_dot_color->string);
 			ss >> r >> g >> b;
 
 			static float crosshairDotColor[2];
@@ -648,14 +649,14 @@ namespace CustomHud
 			crosshairDotColor[1] = g;
 			crosshairDotColor[2] = b;
 
-			if (CVAR_GET_STRING("bxt_cross_dot_color")[0]) {
+			if (bxt_cross_dot_color->string[0]) {
 				gl.color(crosshairDotColor[0], crosshairDotColor[1], crosshairDotColor[2], alpha);
 			}
 			else {
 				gl.color(255.0f, 0.0f, 0.0f, alpha);
 			}
 
-			auto size = CVAR_GET_FLOAT("bxt_cross_dot_size");
+			auto size = bxt_cross_dot_size->value;
 			auto offset = Vector2D(size / 2.0f, size / 2.0f);
 
 			gl.rectangle(center - offset, center + offset);
@@ -766,7 +767,7 @@ namespace CustomHud
 	{
 		hudTime = flTime;
 
-		if (CVAR_GET_FLOAT("bxt_hud") == 0)
+		if (bxt_hud->value == 0.0f)
 			return;
 
 		UpdateColors();

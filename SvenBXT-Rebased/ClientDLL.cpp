@@ -16,6 +16,44 @@ _IN_ActivateMouse ORIG_IN_ActivateMouse = nullptr;
 _IN_DeactivateMouse ORIG_IN_DeactivateMouse = nullptr;
 _HUD_DrawTransparentTriangles ORIG_HUD_DrawTransparentTriangles = nullptr;
 
+// HUD things
+cvar_t* con_color;
+
+cvar_t* bxt_hud;
+cvar_t* bxt_hud_color;
+cvar_t* bxt_hud_precision;
+cvar_t* bxt_hud_speedometer;
+cvar_t* bxt_hud_speedometer_offset;
+cvar_t* bxt_hud_speedometer_anchor;
+cvar_t* bxt_hud_jumpspeed;
+cvar_t* bxt_hud_jumpspeed_anchor;
+cvar_t* bxt_hud_jumpspeed_offset;
+cvar_t* bxt_hud_viewangles;
+cvar_t* bxt_hud_viewangles_offset;
+cvar_t* bxt_hud_viewangles_anchor;
+cvar_t* bxt_hud_origin;
+cvar_t* bxt_hud_origin_offset;
+cvar_t* bxt_hud_origin_anchor;
+
+// OpenGL crosshair cvars
+cvar_t* bxt_cross;
+cvar_t* bxt_cross_color;
+cvar_t* bxt_cross_alpha;
+cvar_t* bxt_cross_thickness;
+cvar_t* bxt_cross_size;
+cvar_t* bxt_cross_gap;
+cvar_t* bxt_cross_outline;
+cvar_t* bxt_cross_circle_radius;
+cvar_t* bxt_cross_dot_color;
+cvar_t* bxt_cross_dot_size;
+cvar_t* bxt_cross_top_line;
+cvar_t* bxt_cross_bottom_line;
+cvar_t* bxt_cross_left_line;
+cvar_t* bxt_cross_right_line;
+
+// Tri cvars
+cvar_t* bxt_show_triggers;
+
 #ifdef BXT_TESTS
 cvar_t* bxt_autojump;
 #endif
@@ -136,40 +174,42 @@ void CL_RegisterCVars()
 #endif
 
 	// HUD things
-	CVAR_CREATE("bxt_hud", "1", 0);
-	CVAR_CREATE("bxt_hud_color", "100 130 200", 0);
-	CVAR_CREATE("bxt_hud_precision", "6", 0);
-	CVAR_CREATE("bxt_hud_speedometer", "1", 0);
-	CVAR_CREATE("bxt_hud_speedometer_offset", "", 0);
-	CVAR_CREATE("bxt_hud_speedometer_anchor", "0.5 1", 0);
-	CVAR_CREATE("bxt_hud_jumpspeed", "0", 0);
-	CVAR_CREATE("bxt_hud_jumpspeed_anchor", "0.5 1", 0);
-	CVAR_CREATE("bxt_hud_jumpspeed_offset", "", 0);
-	CVAR_CREATE("bxt_hud_viewangles", "0", 0);
-	CVAR_CREATE("bxt_hud_viewangles_offset", "", 0);
-	CVAR_CREATE("bxt_hud_viewangles_anchor", "1 0", 0);
-	CVAR_CREATE("bxt_hud_origin", "0", 0);
-	CVAR_CREATE("bxt_hud_origin_offset", "", 0);
-	CVAR_CREATE("bxt_hud_origin_anchor", "1 0", 0);
+	con_color = pEngfuncs->pfnGetCvarPointer("con_color");
+
+	bxt_hud = CVAR_CREATE("bxt_hud", "1", 0);
+	bxt_hud_color = CVAR_CREATE("bxt_hud_color", "100 130 200", 0);
+	bxt_hud_precision = CVAR_CREATE("bxt_hud_precision", "6", 0);
+	bxt_hud_speedometer = CVAR_CREATE("bxt_hud_speedometer", "1", 0);
+	bxt_hud_speedometer_offset = CVAR_CREATE("bxt_hud_speedometer_offset", "", 0);
+	bxt_hud_speedometer_anchor = CVAR_CREATE("bxt_hud_speedometer_anchor", "0.5 1", 0);
+	bxt_hud_jumpspeed = CVAR_CREATE("bxt_hud_jumpspeed", "0", 0);
+	bxt_hud_jumpspeed_anchor = CVAR_CREATE("bxt_hud_jumpspeed_anchor", "0.5 1", 0);
+	bxt_hud_jumpspeed_offset = CVAR_CREATE("bxt_hud_jumpspeed_offset", "", 0);
+	bxt_hud_viewangles = CVAR_CREATE("bxt_hud_viewangles", "0", 0);
+	bxt_hud_viewangles_offset = CVAR_CREATE("bxt_hud_viewangles_offset", "", 0);
+	bxt_hud_viewangles_anchor = CVAR_CREATE("bxt_hud_viewangles_anchor", "1 0", 0);
+	bxt_hud_origin = CVAR_CREATE("bxt_hud_origin", "0", 0);
+	bxt_hud_origin_offset = CVAR_CREATE("bxt_hud_origin_offset", "", 0);
+	bxt_hud_origin_anchor = CVAR_CREATE("bxt_hud_origin_anchor", "1 0", 0);
 
 	// OpenGL crosshair cvars
-	CVAR_CREATE("bxt_cross", "0", 0);
-	CVAR_CREATE("bxt_cross_color", "", 0);
-	CVAR_CREATE("bxt_cross_alpha", "255", 0);
-	CVAR_CREATE("bxt_cross_thickness", "2", 0);
-	CVAR_CREATE("bxt_cross_size", "10", 0);
-	CVAR_CREATE("bxt_cross_gap", "3", 0);
-	CVAR_CREATE("bxt_cross_outline", "0", 0);
-	CVAR_CREATE("bxt_cross_circle_radius", "0", 0);
-	CVAR_CREATE("bxt_cross_dot_color", "", 0);
-	CVAR_CREATE("bxt_cross_dot_size", "0", 0);
-	CVAR_CREATE("bxt_cross_top_line", "1", 0);
-	CVAR_CREATE("bxt_cross_bottom_line", "1", 0);
-	CVAR_CREATE("bxt_cross_left_line", "1", 0);
-	CVAR_CREATE("bxt_cross_right_line", "1", 0);
+	bxt_cross = CVAR_CREATE("bxt_cross", "0", 0);
+	bxt_cross_color = CVAR_CREATE("bxt_cross_color", "", 0);
+	bxt_cross_alpha = CVAR_CREATE("bxt_cross_alpha", "255", 0);
+	bxt_cross_thickness = CVAR_CREATE("bxt_cross_thickness", "2", 0);
+	bxt_cross_size = CVAR_CREATE("bxt_cross_size", "10", 0);
+	bxt_cross_gap = CVAR_CREATE("bxt_cross_gap", "3", 0);
+	bxt_cross_outline = CVAR_CREATE("bxt_cross_outline", "0", 0);
+	bxt_cross_circle_radius = CVAR_CREATE("bxt_cross_circle_radius", "0", 0);
+	bxt_cross_dot_color = CVAR_CREATE("bxt_cross_dot_color", "", 0);
+	bxt_cross_dot_size = CVAR_CREATE("bxt_cross_dot_size", "0", 0);
+	bxt_cross_top_line = CVAR_CREATE("bxt_cross_top_line", "1", 0);
+	bxt_cross_bottom_line = CVAR_CREATE("bxt_cross_bottom_line", "1", 0);
+	bxt_cross_left_line = CVAR_CREATE("bxt_cross_left_line", "1", 0);
+	bxt_cross_right_line = CVAR_CREATE("bxt_cross_right_line", "1", 0);
 
 	// Tri cvars
-	CVAR_CREATE("bxt_show_triggers", "0", 0);
+	bxt_show_triggers = CVAR_CREATE("bxt_show_triggers", "0", 0);
 }
 
 void CClientHooks::Initialize() {

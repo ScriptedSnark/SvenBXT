@@ -1,3 +1,4 @@
+#include "ClientDLL.hpp"
 #include "HwDLL.hpp"
 
 #pragma warning(disable: 4996)
@@ -12,7 +13,7 @@ _Draw_FillRGBA ORIG_Draw_FillRGBA;
 //-----------------------------------------------------------------------------
 void __cdecl HOOKED_SPR_Set(HSPRITE_HL sprite, int r, int g, int b) {
 	int bxt_r = 0, bxt_g = 0, bxt_b = 0;
-	sscanf(pEngfuncs->pfnGetCvarString("bxt_hud_color"), "%d %d %d", &bxt_r, &bxt_g, &bxt_b);
+	sscanf(bxt_hud_color->string, "%d %d %d", &bxt_r, &bxt_g, &bxt_b);
 
 	ORIG_SPR_Set(sprite, bxt_r, bxt_g, bxt_b);
 }
@@ -22,7 +23,7 @@ void __cdecl HOOKED_SPR_Set(HSPRITE_HL sprite, int r, int g, int b) {
 //-----------------------------------------------------------------------------
 void __cdecl HOOKED_Draw_FillRGBA(int x, int y, int w, int h, int r, int g, int b, int a) {
 	int bxt_r = 0, bxt_g = 0, bxt_b = 0;
-	sscanf(pEngfuncs->pfnGetCvarString("bxt_hud_color"), "%d %d %d", &bxt_r, &bxt_g, &bxt_b);
+	sscanf(bxt_hud_color->string, "%d %d %d", &bxt_r, &bxt_g, &bxt_b);
 
 	ORIG_Draw_FillRGBA(x, y, w, h, bxt_r, bxt_g, bxt_b, a);
 }

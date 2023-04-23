@@ -27,6 +27,44 @@ typedef void (*_IN_DeactivateMouse)();
 typedef void (*_HUD_DrawTransparentTriangles)(void);
 typedef void (*_SMR_StudioSetupBones)(void);
 
+// HUD things
+extern cvar_t* con_color;
+
+extern cvar_t* bxt_hud;
+extern cvar_t* bxt_hud_color;
+extern cvar_t* bxt_hud_precision;
+extern cvar_t* bxt_hud_speedometer;
+extern cvar_t* bxt_hud_speedometer_offset;
+extern cvar_t* bxt_hud_speedometer_anchor;
+extern cvar_t* bxt_hud_jumpspeed;
+extern cvar_t* bxt_hud_jumpspeed_anchor;
+extern cvar_t* bxt_hud_jumpspeed_offset;
+extern cvar_t* bxt_hud_viewangles;
+extern cvar_t* bxt_hud_viewangles_offset;
+extern cvar_t* bxt_hud_viewangles_anchor;
+extern cvar_t* bxt_hud_origin;
+extern cvar_t* bxt_hud_origin_offset;
+extern cvar_t* bxt_hud_origin_anchor;
+
+// OpenGL crosshair cvars
+extern cvar_t* bxt_cross;
+extern cvar_t* bxt_cross_color;
+extern cvar_t* bxt_cross_alpha;
+extern cvar_t* bxt_cross_thickness;
+extern cvar_t* bxt_cross_size;
+extern cvar_t* bxt_cross_gap;
+extern cvar_t* bxt_cross_outline;
+extern cvar_t* bxt_cross_circle_radius;
+extern cvar_t* bxt_cross_dot_color;
+extern cvar_t* bxt_cross_dot_size;
+extern cvar_t* bxt_cross_top_line;
+extern cvar_t* bxt_cross_bottom_line;
+extern cvar_t* bxt_cross_left_line;
+extern cvar_t* bxt_cross_right_line;
+
+// Tri cvars
+extern cvar_t* bxt_show_triggers;
+
 #define FindbySymbol(func_name) \
 	if ((ORIG_##func_name = reinterpret_cast<_##func_name>(GetProcAddress(reinterpret_cast<HMODULE>(clientDll), "" #func_name "")))) \
 		pEngfuncs->Con_Printf("[client dll] Found " #func_name " at %p.\n", ORIG_##func_name); \
