@@ -2,14 +2,21 @@
 #include "HwDLL.hpp"
 
 void Main() {
+	/*
 	AllocConsole();
 	FILE* in, *out;
 	freopen_s(&in, "conin$", "r", stdin);
 	freopen_s(&out, "conout$", "w+", stdout);
+	*/
 	MH_STATUS status = MH_Initialize();
+
+	char error_string[128];
+	sprintf(error_string, "Couldn't initialize MinHook: %s\n", MH_StatusToString(status));
+
 	if (status != MH_OK) {
-		printf("Couldn't initialize MinHook: %s\n", MH_StatusToString(status));
+		MessageBox(NULL, error_string, "SvenBXT", MB_OK | MB_ICONERROR);
 	}
+
 	CClientHooks::Initialize();
 	CEngineHooks::Initialize(); 
 }
