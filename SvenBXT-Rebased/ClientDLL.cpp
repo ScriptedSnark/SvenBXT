@@ -34,6 +34,9 @@ cvar_t* bxt_hud_viewangles_anchor;
 cvar_t* bxt_hud_origin;
 cvar_t* bxt_hud_origin_offset;
 cvar_t* bxt_hud_origin_anchor;
+cvar_t* bxt_hud_timer;
+cvar_t* bxt_hud_timer_offset;
+cvar_t* bxt_hud_timer_anchor;
 
 // OpenGL crosshair cvars
 cvar_t* bxt_cross;
@@ -50,6 +53,9 @@ cvar_t* bxt_cross_top_line;
 cvar_t* bxt_cross_bottom_line;
 cvar_t* bxt_cross_left_line;
 cvar_t* bxt_cross_right_line;
+
+// Viewmodel cvars
+cvar_t* bxt_viewmodel_bob_angled;
 
 // Tri cvars
 cvar_t* bxt_show_triggers;
@@ -162,6 +168,9 @@ void CL_RegisterCmds() {
 	pEngfuncs->pfnAddCommand("-bxt_tas_ducktap", IN_BXT_TAS_Ducktap_Up);
 #endif
 	pEngfuncs->pfnAddCommand("bxt_customtimer", CustomTimer);
+	pEngfuncs->pfnAddCommand("bxt_timer_reset", CustomHud::ResetTimer);
+	pEngfuncs->pfnAddCommand("bxt_timer_start", CustomHud::StartTimer);
+	pEngfuncs->pfnAddCommand("bxt_timer_stop", CustomHud::StopTimer);
 }
 
 void CL_RegisterCVars()
@@ -191,6 +200,9 @@ void CL_RegisterCVars()
 	bxt_hud_origin = CVAR_CREATE("bxt_hud_origin", "0", 0);
 	bxt_hud_origin_offset = CVAR_CREATE("bxt_hud_origin_offset", "", 0);
 	bxt_hud_origin_anchor = CVAR_CREATE("bxt_hud_origin_anchor", "1 0", 0);
+	bxt_hud_timer = CVAR_CREATE("bxt_hud_timer", "0", 0);
+	bxt_hud_timer_offset = CVAR_CREATE("bxt_hud_timer_offset", "", 0);
+	bxt_hud_timer_anchor = CVAR_CREATE("bxt_hud_timer_anchor", "0 0.5", 0);
 
 	// OpenGL crosshair cvars
 	bxt_cross = CVAR_CREATE("bxt_cross", "0", 0);
@@ -207,6 +219,9 @@ void CL_RegisterCVars()
 	bxt_cross_bottom_line = CVAR_CREATE("bxt_cross_bottom_line", "1", 0);
 	bxt_cross_left_line = CVAR_CREATE("bxt_cross_left_line", "1", 0);
 	bxt_cross_right_line = CVAR_CREATE("bxt_cross_right_line", "1", 0);
+
+	// Viewmodel cvars
+	bxt_viewmodel_bob_angled = CVAR_CREATE("bxt_viewmodel_bob_angled", "0", 0);
 
 	// Tri cvars
 	bxt_show_triggers = CVAR_CREATE("bxt_show_triggers", "0", 0);

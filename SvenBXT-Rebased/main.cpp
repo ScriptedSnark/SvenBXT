@@ -11,7 +11,7 @@ void Main() {
 	MH_STATUS status = MH_Initialize();
 
 	char error_string[128];
-	sprintf(error_string, "Couldn't initialize MinHook: %s\n", MH_StatusToString(status));
+	sprintf_s(error_string, "Couldn't initialize MinHook: %s\n", MH_StatusToString(status));
 
 	if (status != MH_OK) {
 		MessageBox(NULL, error_string, "SvenBXT", MB_OK | MB_ICONERROR);

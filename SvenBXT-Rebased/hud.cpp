@@ -2,6 +2,10 @@
 #include "hud.hpp"
 #include "opengl_utils.hpp"
 
+#include <chrono>
+
+#undef min
+
 float hudTime;
 bool DrawTimer = false;
 float m_flTurnoff;
@@ -24,6 +28,13 @@ namespace CustomHud
 	static int NumberHeight;
 	unsigned char custom_r, custom_g, custom_b;
 	bool custom_hud_color_set = false;
+
+	// bxt_hud_timer things
+	static bool isTiming = false;
+	double elapsedPaused = 0.0;
+	bool isPaused = false;
+	static std::chrono::high_resolution_clock::time_point startTime;
+	static std::chrono::high_resolution_clock::time_point stopTime;
 
 	static void UpdateScreenInfo()
 	{
@@ -260,6 +271,52 @@ namespace CustomHud
 		*/
 	}
 
+	static int DrawNumberXT(int number, int x, int y, int r, int g, int b, int fieldMinWidth = 1)
+	{
+		if (number < 0)
+		{
+			if (number == std::numeric_limits<int>::min())
+			{
+				number = 0;
+			}
+			else
+			{
+				number = abs(number);
+				DrawLine(x - NumberWidth, y + NumberHeight / 2, NumberWidth, r, g, b);
+			}
+		}
+
+		static_assert(sizeof(int) >= 4, "Int less than 4 bytes in size is not supported.");
+
+		int digits[10] = { 0 };
+		int i;
+		for (i = 0; i < 10; ++i)
+		{
+			if (number == 0)
+				break;
+
+			digits[i] = number % 10;
+			number /= 10;
+		}
+
+		for (; fieldMinWidth > 10; --fieldMinWidth)
+		{
+			DrawDigit(0, x, y, r, g, b);
+			x += NumberWidth;
+		}
+		if (fieldMinWidth > i)
+			i = fieldMinWidth;
+
+		for (int j = i; j > 0; --j)
+		{
+			DrawDigit(digits[j - 1], x, y, r, g, b);
+			x += NumberWidth;
+		}
+
+		return x;
+	}
+
+
 	static int DrawNumber(int number, int x, int y, int r, int g, int b, int alignment, int fieldMinWidth = 1)
 	{
 		bool bNegative = false;
@@ -348,6 +405,41 @@ namespace CustomHud
 			std::istringstream color_ss(colorStr);
 			color_ss >> hudColor[0] >> hudColor[1] >> hudColor[2];
 		}
+	}
+
+	static inline int DrawNumberTimer(int number, int x, int y, int fieldMinWidth = 1)
+	{
+		return DrawNumberXT(number, x, y, hudColor[0], hudColor[1], hudColor[2], fieldMinWidth);
+	}
+
+	static int DrawNumberTimer(int number, int x, int y, int r, int g, int b, int fieldMinWidth = 1)
+	{
+		return DrawNumberXT(number, x, y, r, g, b, fieldMinWidth);
+	}
+
+	static void DrawDecimalSeparator(int x, int y, int r, int g, int b)
+	{
+		x += (NumberWidth - 6) / 2;
+		y += NumberHeight - 5;
+		DrawDot(x + 1, y, r, g, b);
+	}
+
+	static void DrawDecimalSeparator(int x, int y)
+	{
+		return DrawDecimalSeparator(x, y, hudColor[0], hudColor[1], hudColor[2]);
+	}
+
+	static void DrawColon(int x, int y, int r, int g, int b)
+	{
+		x += (NumberWidth - 6) / 2;
+		DrawDot(x + 1, y + 2, r, g, b);
+		y += NumberHeight - 5;
+		DrawDot(x + 1, y - 2, r, g, b);
+	}
+
+	static void DrawColon(int x, int y)
+	{
+		return DrawColon(x, y, hudColor[0], hudColor[1], hudColor[2]);
 	}
 
 	static void GetPosition(const char* Offset, const char* Anchor, int* x, int* y, int rx = 0, int ry = 0)
@@ -696,6 +788,107 @@ namespace CustomHud
 		DrawString(si.iWidth / 2.1, si.iCharHeight * 4, szText);
 	}
 
+	double GetElapsedTime()
+	{
+		if (isTiming)
+		{
+			return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime).count();
+		}
+		else
+		{
+			return std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count();
+		}
+	}
+
+	void DrawTime()
+	{
+		if (!bxt_hud_timer->value)
+			return;
+
+		double elapsed = GetElapsedTime();
+
+		int days = elapsed / (1000 * 60 * 60 * 24);
+		elapsed -= days * (1000 * 60 * 60 * 24);
+
+		int hours = elapsed / (1000 * 60 * 60);
+		elapsed -= hours * (1000 * 60 * 60);
+
+		int minutes = elapsed / (1000 * 60);
+		elapsed -= minutes * (1000 * 60);
+
+		int seconds = elapsed / 1000;
+		elapsed -= seconds * 1000;
+
+		int milliseconds = elapsed;
+
+		int x, y;
+		GetPosition(bxt_hud_timer_offset->string, bxt_hud_timer_anchor->string, &x, &y, 0, 0);
+
+		if (hours)
+		{
+			x = DrawNumberTimer(hours, x, y);
+			DrawColon(x, y);
+			x += NumberWidth;
+		}
+
+		if (hours || minutes)
+		{
+			int fieldMinWidth = (hours && minutes < 10) ? 2 : 1;
+			x = DrawNumberTimer(minutes, x, y, fieldMinWidth);
+			DrawColon(x, y);
+			x += NumberWidth;
+		}
+
+		int fieldMinWidth = ((hours || minutes) && seconds < 10) ? 2 : 1;
+		x = DrawNumberTimer(seconds, x, y, fieldMinWidth);
+
+		DrawDecimalSeparator(x, y);
+		x += NumberWidth;
+
+		DrawNumberTimer(milliseconds, x, y, 3);
+	}
+
+	void StartTimer()
+	{
+		if (!isTiming)
+		{
+			if (isPaused)
+			{
+				startTime = std::chrono::high_resolution_clock::now() - std::chrono::milliseconds(static_cast<long long>(elapsedPaused));
+				elapsedPaused = 0.0;
+				isPaused = false;
+			}
+			else
+			{
+				startTime = std::chrono::high_resolution_clock::now();
+			}
+			isTiming = true;
+		}
+	}
+
+	void StopTimer()
+	{
+		if (isTiming)
+		{
+			isTiming = false;
+			stopTime = std::chrono::high_resolution_clock::now();
+			elapsedPaused = GetElapsedTime();
+			isPaused = true;
+		}
+	}
+
+	void ResetTimer()
+	{
+		if (isTiming)
+		{
+			isTiming = false;
+			isPaused = false;
+		}
+		elapsedPaused = 0.0;
+		startTime = std::chrono::high_resolution_clock::now();
+		stopTime = std::chrono::high_resolution_clock::now();
+	}
+
 	void Init()
 	{
 		SpriteList = nullptr;
@@ -779,6 +972,7 @@ namespace CustomHud
 		DrawOrigin(flTime);
 		DrawCrosshair(flTime);
 		DrawCustomTimer(flTime);
+		DrawTime();
 	}
 
 	void V_CalcRefdef(struct ref_params_s* pparams)

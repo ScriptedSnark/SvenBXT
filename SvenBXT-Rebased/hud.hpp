@@ -28,6 +28,9 @@ namespace CustomHud
 	} playerinfo;
 	
 	void DrawCustomTimer(float time);
+	void StartTimer();
+	void StopTimer();
+	void ResetTimer();
 	void Init();
 	void InitIfNecessary();
 	void VidInit();

@@ -45,6 +45,9 @@ extern cvar_t* bxt_hud_viewangles_anchor;
 extern cvar_t* bxt_hud_origin;
 extern cvar_t* bxt_hud_origin_offset;
 extern cvar_t* bxt_hud_origin_anchor;
+extern cvar_t* bxt_hud_timer;
+extern cvar_t* bxt_hud_timer_offset;
+extern cvar_t* bxt_hud_timer_anchor;
 
 // OpenGL crosshair cvars
 extern cvar_t* bxt_cross;
@@ -61,6 +64,9 @@ extern cvar_t* bxt_cross_top_line;
 extern cvar_t* bxt_cross_bottom_line;
 extern cvar_t* bxt_cross_left_line;
 extern cvar_t* bxt_cross_right_line;
+
+// Viewmodel cvars
+extern cvar_t* bxt_viewmodel_bob_angled;
 
 // Tri cvars
 extern cvar_t* bxt_show_triggers;
