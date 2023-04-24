@@ -101,6 +101,11 @@ void HOOKED_V_CalcRefdef(struct ref_params_s* pparams)
 	CustomHud::V_CalcRefdef(pparams);
 	ORIG_V_CalcRefdef(pparams);
 	params = pparams;
+
+	cl_entity_s* viewmodel = pEngfuncs->GetViewModel();
+
+	if (bxt_viewmodel_bob_angled->value)
+		viewmodel->curstate.angles = viewmodel->angles;
 }
 
 void HOOKED_HUD_PlayerMove(struct playermove_s* ppmove, qboolean server) {
