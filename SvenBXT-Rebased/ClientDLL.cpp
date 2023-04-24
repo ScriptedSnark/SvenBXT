@@ -55,6 +55,9 @@ cvar_t* bxt_cross_left_line;
 cvar_t* bxt_cross_right_line;
 
 // Viewmodel cvars
+cvar_t* bxt_viewmodel_ofs_forward;
+cvar_t* bxt_viewmodel_ofs_right;
+cvar_t* bxt_viewmodel_ofs_up;
 cvar_t* bxt_viewmodel_bob_angled;
 
 // Tri cvars
@@ -103,6 +106,16 @@ void HOOKED_V_CalcRefdef(struct ref_params_s* pparams)
 	params = pparams;
 
 	cl_entity_s* viewmodel = pEngfuncs->GetViewModel();
+
+	float forward_offset = bxt_viewmodel_ofs_forward->value;
+	float right_offset = bxt_viewmodel_ofs_right->value;
+	float up_offset = bxt_viewmodel_ofs_up->value;
+
+	for (int i = 0; i < 3; i++) {
+		viewmodel->origin[i] += forward_offset * pparams->forward[i] +
+			right_offset * pparams->right[i] +
+			up_offset * pparams->up[i];
+	}
 
 	if (bxt_viewmodel_bob_angled->value)
 		viewmodel->curstate.angles = viewmodel->angles;
@@ -226,6 +239,9 @@ void CL_RegisterCVars()
 	bxt_cross_right_line = CVAR_CREATE("bxt_cross_right_line", "1", 0);
 
 	// Viewmodel cvars
+	bxt_viewmodel_ofs_forward = CVAR_CREATE("bxt_viewmodel_ofs_forward", "0", 0);
+	bxt_viewmodel_ofs_right = CVAR_CREATE("bxt_viewmodel_ofs_right", "0", 0);
+	bxt_viewmodel_ofs_up = CVAR_CREATE("bxt_viewmodel_ofs_up", "0", 0);
 	bxt_viewmodel_bob_angled = CVAR_CREATE("bxt_viewmodel_bob_angled", "0", 0);
 
 	// Tri cvars

@@ -66,6 +66,9 @@ extern cvar_t* bxt_cross_left_line;
 extern cvar_t* bxt_cross_right_line;
 
 // Viewmodel cvars
+extern cvar_t* bxt_viewmodel_ofs_forward;
+extern cvar_t* bxt_viewmodel_ofs_right;
+extern cvar_t* bxt_viewmodel_ofs_up;
 extern cvar_t* bxt_viewmodel_bob_angled;
 
 // Tri cvars
