@@ -29,14 +29,14 @@ jobs:
             bin-path: "src/build/Release/SvenBXT.dll"
             toolchain-file: ""
           - os: ubuntu-latest
-            c_compiler: gcc
-            cpp_compiler: g++
-            artifact: "ubuntu-gcc"
+            c_compiler: clang
+            cpp_compiler: clang++
+            artifact: "ubuntu-clang"
             bin-path: "src/build/libSvenBXT.so"
             toolchain-file: "cmake/ToolchainLinuxGCC.cmake"
         exclude:
           - os: windows-latest
-            c_compiler: gcc
+            c_compiler: clang
           - os: ubuntu-latest
             c_compiler: cl
 
