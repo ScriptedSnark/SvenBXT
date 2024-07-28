@@ -60,19 +60,19 @@ jobs:
       run: |
           sudo dpkg --add-architecture i386
           sudo apt update || true
-          sudo apt install -y build-essential libc6:i386 ninja-build gcc-11-multilib g++-11-multilib
+          sudo apt install -y libc6:i386 gcc-11-multilib g++-11-multilib
 
     - name: Configure CMake
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
-        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}-9
-        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}-9
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -DCMAKE_TOOLCHAIN_FILE=${{ matrix.toolchain-file }}
         -S ${{ steps.strings.outputs.src-dir }}
 
     - name: Build
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --target ALL_BUILD --config ${{ matrix.build_type }}
 
     - name: Prepare artifacts
       run: mkdir -p bin && mv ${{ matrix.bin-path }} bin/
