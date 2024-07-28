@@ -64,7 +64,7 @@ jobs:
 
     - name: Configure CMake
       run: >
-        cmake -G ninja -B ${{ steps.strings.outputs.build-output-dir }}
+        cmake -G Ninja -B ${{ steps.strings.outputs.build-output-dir }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}-9
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}-9
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
