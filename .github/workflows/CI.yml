@@ -70,7 +70,9 @@ jobs:
 
     - name: Configure CMake
       run: >
-        cmake -G "${{ matrix.cmake-generator }}" -B ${{ steps.strings.outputs.build-output-dir }}
+        cmake -G "${{ matrix.cmake-generator }}"
+        -A Win32
+        -B ${{ steps.strings.outputs.build-output-dir }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
@@ -83,7 +85,7 @@ jobs:
 
     - name: Build (Windows)
       if: runner.os == 'Windows'
-      run: msbuild /m /p:OutputPath=${{ steps.strings.outputs.build-output-dir }} /p:Configuration=${{ matrix.build_type }} /p:Platform="x86" ${{ steps.strings.outputs.build-output-dir }}/SvenBXT.sln
+      run: msbuild /m /p:OutputPath=${{ steps.strings.outputs.build-output-dir }} /p:Configuration=${{ matrix.build_type }} ${{ steps.strings.outputs.build-output-dir }}/SvenBXT.sln
 
     - name: Prepare artifacts
       run: mkdir -p bin && mv ${{ matrix.bin-path }} bin/
