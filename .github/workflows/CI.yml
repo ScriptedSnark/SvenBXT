@@ -83,7 +83,7 @@ jobs:
 
     - name: Build (Windows)
       if: runner.os == 'Windows'
-      run: msbuild /m /p:OutputPath=${{ steps.strings.outputs.build-output-dir }} /p:Configuration=${{ matrix.build_type }} /p:PlatformTarget="x86" ${{ steps.strings.outputs.build-output-dir }}/SvenBXT.sln
+      run: msbuild /m /p:OutputPath=${{ steps.strings.outputs.build-output-dir }} /p:Configuration=${{ matrix.build_type }} /p:Platform=x86 ${{ steps.strings.outputs.build-output-dir }}/SvenBXT.sln
 
     - name: Prepare artifacts
       run: mkdir -p bin && mv ${{ matrix.bin-path }} bin/
