@@ -43,7 +43,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Checkout submodules # checkout rest
+    - name: Checkout submodules
       shell: bash
       run: |
         auth_header="$(git config --local --get http.https://github.com/.extraheader)"
@@ -68,8 +68,6 @@ jobs:
     - name: Configure CMake
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
-        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -DCMAKE_TOOLCHAIN_FILE=${{ matrix.toolchain-file }}
         -S ${{ steps.strings.outputs.src-dir }}
