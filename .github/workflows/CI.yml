@@ -27,7 +27,7 @@ jobs:
             cpp_compiler: cl
             artifact: "windows-cl"
             bin-path: "src/build/Release/SvenBXT.dll"
-            toolchain-file: "1" # "1" is the default value of CMAKE_TOOLCHAIN_FILE
+            toolchain-file: ""
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
@@ -50,6 +50,12 @@ jobs:
       run: |
         echo "build-output-dir=${{ github.workspace }}/src/build" >> "$GITHUB_OUTPUT"
         echo "src-dir=${{ github.workspace }}/src" >> "$GITHUB_OUTPUT"
+
+    - name: Install dependencies
+      run: |
+        sudo dpkg --add-architecture i386
+        sudo apt update || true
+        sudo apt install -y libc6:i386 ninja-build gcc-9-multilib g++-9-multilib libssl1.1:i386 libssl-dev:i386 zlib1g-dev:i386
 
     - name: Configure CMake
       run: >
