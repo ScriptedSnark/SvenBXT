@@ -52,7 +52,7 @@ jobs:
         echo "src-dir=${{ github.workspace }}/src" >> "$GITHUB_OUTPUT"
 
     - name: Install Ubuntu packages
-      if: matrix.runs-on == 'ubuntu-latest'
+      if: runner.os == 'Linux'
       run: |
           sudo dpkg --add-architecture i386
           sudo apt update || true
