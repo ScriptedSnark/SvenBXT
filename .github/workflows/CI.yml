@@ -37,7 +37,7 @@ jobs:
             bin-path: "src/build/libSvenBXT.so"
             toolchain-file: "cmake/ToolchainLinuxGCC.cmake"
             cmake-generator: "Unix Makefiles"
-            build-target: ""
+            build-target: "x86"
         exclude:
           - os: windows-latest
             c_compiler: gcc
