@@ -51,6 +51,7 @@ jobs:
         echo "build-output-dir=${{ github.workspace }}/src/build" >> "$GITHUB_OUTPUT"
 
     - name: Configure CMake
+      working-directory: ./src/
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
