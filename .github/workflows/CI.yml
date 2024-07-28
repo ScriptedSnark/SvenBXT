@@ -1,0 +1,72 @@
+name: CI
+
+on: 
+  push:
+  pull_request:
+  workflow_dispatch:
+
+  # Run GitHub Actions monthly to make sure CI isn't broken
+  schedule:
+    - cron: '0 0 1 * *'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
+      fail-fast: false
+
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        build_type: [Release]
+        c_compiler: [gcc, cl]
+        include:
+          - os: windows-latest
+            c_compiler: cl
+            cpp_compiler: cl
+            artifact: "windows-cl"
+            bin-path: "src/build/Release/SvenBXT.dll"
+            toolchain-file: "1" # "1" is the default value of CMAKE_TOOLCHAIN_FILE
+          - os: ubuntu-latest
+            c_compiler: gcc
+            cpp_compiler: g++
+            artifact: "ubuntu-gcc"
+            bin-path: "src/build/libSvenBXT.so"
+            toolchain-file: "cmake/ToolchainLinuxGCC.cmake"
+        exclude:
+          - os: windows-latest
+            c_compiler: gcc
+          - os: ubuntu-latest
+            c_compiler: cl
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set reusable strings
+      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
+      id: strings
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/src/build" >> "$GITHUB_OUTPUT"
+
+    - name: Configure CMake
+      run: >
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DCMAKE_TOOLCHAIN_FILE=${{ matrix.toolchain-file }}
+        -S ${{ github.workspace }}
+
+    - name: Build
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+
+    - name: Prepare artifacts
+      run: mkdir -p bin && mv ${{ matrix.bin-path }} bin/
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v1
+      with:
+        path: ./bin
+        name: ${{ matrix.artifact }}
