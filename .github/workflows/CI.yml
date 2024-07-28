@@ -55,6 +55,9 @@ jobs:
         echo "build-output-dir=${{ github.workspace }}/src/build" >> "$GITHUB_OUTPUT"
         echo "src-dir=${{ github.workspace }}/src" >> "$GITHUB_OUTPUT"
 
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+
     - name: Install Ubuntu packages
       if: runner.os == 'Linux'
       run: |
@@ -71,8 +74,13 @@ jobs:
         -DCMAKE_TOOLCHAIN_FILE=${{ matrix.toolchain-file }}
         -S ${{ steps.strings.outputs.src-dir }}
 
-    - name: Build
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --target ALL_BUILD --config ${{ matrix.build_type }}
+    - name: Build (Linux)
+      if: runner.os == 'Linux'
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+
+    - name: Build (Windows)
+      if: runner.os == 'Windows'
+      run: msbuild /m /p:OutputPath=${{ steps.strings.outputs.build-output-dir }} /p:Configuration=${{ matrix.build_type }} ${{ steps.strings.outputs.build-output-dir }}/ALL_BUILD.sln
 
     - name: Prepare artifacts
       run: mkdir -p bin && mv ${{ matrix.bin-path }} bin/
