@@ -25,7 +25,7 @@ jobs:
           - os: windows-latest
             c_compiler: cl
             cpp_compiler: cl
-            artifact: "windows-cl"
+            artifact: "svenbxt_windows-cl"
             bin-path: "src/build/Release/SvenBXT.dll"
             toolchain-file: ""
             cmake-generator: "Visual Studio 17 2022"
@@ -33,7 +33,7 @@ jobs:
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
-            artifact: "ubuntu-gcc"
+            artifact: "svenbxt_ubuntu-gcc"
             bin-path: "src/build/libSvenBXT.so"
             toolchain-file: "cmake/ToolchainLinuxGCC.cmake"
             cmake-generator: "Unix Makefiles"
