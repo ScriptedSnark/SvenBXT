@@ -83,6 +83,7 @@ jobs:
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -DCMAKE_TOOLCHAIN_FILE=${{ matrix.toolchain-file }}
+        -DFUNCHOOK_BUILD_TESTS=OFF
         -S ${{ steps.strings.outputs.src-dir }}
 
     - name: Build (Linux)
