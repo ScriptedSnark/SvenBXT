@@ -20,7 +20,6 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
-      # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
       fail-fast: false
 
       matrix:
@@ -35,7 +34,7 @@ jobs:
             bin-path: "src/build/Release/SvenBXT.dll"
             toolchain-file: ""
             cmake-generator: "Visual Studio 17 2022"
-            build-target: "-A Win32" # HACK, but I have no idea how to do it
+            build-target: "-A Win32"
           - os: ubuntu-20.04
             c_compiler: gcc
             cpp_compiler: g++
@@ -51,56 +50,56 @@ jobs:
             c_compiler: cl
 
     steps:
-    - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Checkout submodules
-      shell: bash
-      run: git submodule update --init --recursive
+      - name: Checkout submodules
+        shell: bash
+        run: git submodule update --init --recursive
 
-    - name: Set reusable strings
-      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
-      id: strings
-      shell: bash
-      run: |
-        echo "build-output-dir=${{ github.workspace }}/src/build" >> "$GITHUB_OUTPUT"
-        echo "src-dir=${{ github.workspace }}/src" >> "$GITHUB_OUTPUT"
+      - name: Set reusable strings
+        id: strings
+        shell: bash
+        run: |
+          echo "build-output-dir=${{ github.workspace }}/src/build" >> "$GITHUB_OUTPUT"
+          echo "src-dir=${{ github.workspace }}/src" >> "$GITHUB_OUTPUT"
 
-    - name: Add MSBuild to PATH
-      if: runner.os == 'Windows'
-      uses: microsoft/setup-msbuild@v1.0.2
+      - name: Add MSBuild to PATH
+        if: runner.os == 'Windows'
+        uses: microsoft/setup-msbuild@v2
 
-    - name: Install Ubuntu packages
-      if: runner.os == 'Linux'
-      run: |
+      - name: Install Ubuntu packages
+        if: runner.os == 'Linux'
+        run: |
           sudo dpkg --add-architecture i386
           sudo apt update || true
           sudo apt install -y build-essential libc6:i386 g++-multilib mesa-common-dev libgl-dev:i386 libgl1-mesa-dev
 
-    - name: Configure CMake
-      run: >
-        cmake -G "${{ matrix.cmake-generator }}"
-        ${{ matrix.build-target }}
-        -B ${{ steps.strings.outputs.build-output-dir }}
-        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -DCMAKE_TOOLCHAIN_FILE=${{ matrix.toolchain-file }}
-        -DFUNCHOOK_BUILD_TESTS=OFF
-        -S ${{ steps.strings.outputs.src-dir }}
+      - name: Configure CMake
+        run: >
+          cmake -G "${{ matrix.cmake-generator }}"
+          ${{ matrix.build-target }}
+          -B ${{ steps.strings.outputs.build-output-dir }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DCMAKE_TOOLCHAIN_FILE=${{ matrix.toolchain-file }}
+          -DFUNCHOOK_BUILD_TESTS=OFF
+          -S ${{ steps.strings.outputs.src-dir }}
 
-    - name: Build (Linux)
-      if: runner.os == 'Linux'
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+      - name: Build Linux version
+        if: runner.os == 'Linux'
+        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
-    - name: Build (Windows)
-      if: runner.os == 'Windows'
-      run: msbuild /m /p:OutputPath=${{ steps.strings.outputs.build-output-dir }} /p:Configuration=${{ matrix.build_type }} ${{ steps.strings.outputs.build-output-dir }}/SvenBXT.sln
+      - name: Build Windows version
+        if: runner.os == 'Windows'
+        run: msbuild /m /p:OutputPath=${{ steps.strings.outputs.build-output-dir }} /p:Configuration=${{ matrix.build_type }} ${{ steps.strings.outputs.build-output-dir }}/SvenBXT.sln
 
-    - name: Prepare artifacts
-      run: mkdir -p bin && mv ${{ matrix.bin-path }} bin/
+      - name: Prepare artifacts
+        run: mkdir -p bin && mv ${{ matrix.bin-path }} bin/
 
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v1
-      with:
-        path: ./bin
-        name: ${{ matrix.artifact }}
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          path: ./bin
+          name: ${{ matrix.artifact }}
