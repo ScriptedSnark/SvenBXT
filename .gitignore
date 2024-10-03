@@ -1,11 +1,32 @@
-.idea/
-.vs/
-_build/
-_build_WIN32/
-build/
-src/.idea/
-src/.vs/
-src/_build/
-src/_build_WIN32/
-src/build/
+# Prerequisites
+*.d
 
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
